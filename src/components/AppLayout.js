@@ -42,7 +42,11 @@ export default function AppLayout({
       {showHeader && <CustomHeader />}
       {showLocation && <LocationStatus />}
       <View style={styles.scrollHost}>{children}</View>
-      {showNav && <MainTabNavigator variant="bottom" currentScreen={currentScreen} />}
+      {showNav && (
+        <SafeAreaView edges={['bottom']} style={styles.tabBarSafeArea}>
+          <MainTabNavigator variant="bottom" currentScreen={currentScreen} />
+        </SafeAreaView>
+      )}
     </SafeAreaView>
   );
 }
@@ -52,20 +56,24 @@ const styles = {
     flex: 1,
     flexDirection: 'row',
     backgroundColor: '#050A18',
-    minHeight: Platform.OS === 'web' ? '100vh' : undefined,
+    minHeight: Platform.OS === 'web' ? '100dvh' : undefined,
   },
   mainColumn: {
     flex: 1,
     minWidth: 0,
-    minHeight: Platform.OS === 'web' ? '100vh' : undefined,
+    minHeight: Platform.OS === 'web' ? '100dvh' : undefined,
   },
   safeArea: {
     flex: 1,
-    minHeight: Platform.OS === 'web' ? '100vh' : undefined,
+    minHeight: Platform.OS === 'web' ? '100dvh' : undefined,
   },
   scrollHost: {
     flex: 1,
     minHeight: 0,
     overflow: Platform.OS === 'web' ? 'hidden' : undefined,
+  },
+  tabBarSafeArea: {
+    backgroundColor: '#050A18',
+    flexShrink: 0,
   },
 };

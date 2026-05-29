@@ -30,16 +30,16 @@ function ensureWebViewportHeight() {
   style.textContent = `
     html, body, #root {
       height: 100%;
+      height: 100dvh;
       margin: 0;
       padding: 0;
+      overflow: hidden;
     }
     #root {
       display: flex;
       flex-direction: column;
       min-height: 100%;
-    }
-    body {
-      padding-bottom: env(safe-area-inset-bottom, 0px);
+      min-height: 100dvh;
     }
   `;
   document.head.appendChild(style);
@@ -90,7 +90,7 @@ function AppNavigator() {
 const styles = StyleSheet.create({
   appRoot: {
     flex: 1,
-    ...(Platform.OS === 'web' ? { minHeight: '100vh' } : {}),
+    ...(Platform.OS === 'web' ? { minHeight: '100dvh', height: '100dvh' } : {}),
   },
 });
 

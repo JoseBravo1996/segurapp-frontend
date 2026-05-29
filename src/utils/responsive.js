@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useWindowDimensions, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,6 +12,23 @@ export const BREAKPOINTS = {
 export const SIDEBAR_WIDTH = 248;
 
 const BASE_WIDTH = 375;
+const WEB_MOBILE_BOTTOM_MIN = 52;
+
+function measureWebBottomInset(isMobile) {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') {
+    return isMobile ? WEB_MOBILE_BOTTOM_MIN : 0;
+  }
+
+  const fallback = isMobile ? WEB_MOBILE_BOTTOM_MIN : 0;
+  const vv = window.visualViewport;
+
+  if (!vv) {
+    return fallback;
+  }
+
+  const obscured = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+  return Math.max(obscured, fallback);
+}
 
 export function useResponsive() {
   const { width, height } = useWindowDimensions();
@@ -23,6 +41,25 @@ export function useResponsive() {
   const isWide = width >= BREAKPOINTS.xl;
   const isWeb = Platform.OS === 'web';
 
+  const [webBottomInset, setWebBottomInset] = useState(() => measureWebBottomInset(isMobile));
+
+  useEffect(() => {
+    if (!isWeb || typeof window === 'undefined') return undefined;
+
+    const update = () => setWebBottomInset(measureWebBottomInset(isMobile));
+
+    update();
+    window.visualViewport?.addEventListener('resize', update);
+    window.visualViewport?.addEventListener('scroll', update);
+    window.addEventListener('resize', update);
+
+    return () => {
+      window.visualViewport?.removeEventListener('resize', update);
+      window.visualViewport?.removeEventListener('scroll', update);
+      window.removeEventListener('resize', update);
+    };
+  }, [isWeb, isMobile, width, height]);
+
   const scale = (size) => Math.round((width / BASE_WIDTH) * size);
   const moderateScale = (size, factor = 0.45) =>
     Math.round(size + (scale(size) - size) * factor);
@@ -30,12 +67,9 @@ export function useResponsive() {
   const contentMaxWidth = isWide ? 960 : isDesktop ? 860 : isTablet ? 720 : width;
   const contentPadding = isSmallPhone ? 14 : isMobile ? 18 : isTablet ? 24 : 32;
 
-  const webBottomFallback = isWeb && isMobile ? 20 : 0;
-  const bottomInset = Math.max(insets.bottom, webBottomFallback);
-  const tabBarContentHeight = 64;
-  const tabBarHeight = isDesktop
-    ? 0
-    : tabBarContentHeight + bottomInset + (Platform.OS === 'ios' ? 4 : 6);
+  const bottomInset = Math.max(insets.bottom, webBottomInset);
+  const tabBarContentHeight = 58;
+  const tabBarHeight = isDesktop ? 0 : tabBarContentHeight + bottomInset + 8;
 
   return {
     width,
@@ -58,11 +92,11 @@ export function useResponsive() {
 }
 
 export function getScrollContentStyle(responsive, extra = {}) {
-  const { isDesktop, tabBarHeight, contentPadding, contentMaxWidth } = responsive;
+  const { isDesktop, contentPadding, contentMaxWidth } = responsive;
 
   return {
     padding: contentPadding,
-    paddingBottom: isDesktop ? contentPadding + 40 : tabBarHeight + 16,
+    paddingBottom: isDesktop ? contentPadding + 40 : contentPadding + 24,
     maxWidth: contentMaxWidth,
     width: '100%',
     alignSelf: 'center',
