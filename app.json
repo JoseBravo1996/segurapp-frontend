@@ -1,0 +1,48 @@
+{
+  "expo": {
+    "name": "SegurAPP",
+    "slug": "SegurAPP",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.anonymous.SegurAPP",
+      "googleServicesFile": "./google-services.json"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#FF5E00",
+          "defaultChannel": "segurapp-alerts"
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "SegurAPP necesita el micrófono para detectar tus palabras clave de emergencia.",
+          "speechRecognitionPermission": "SegurAPP usa reconocimiento de voz para activar alertas con tus palabras clave.",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+        }
+      ]
+    ]
+  }
+}
