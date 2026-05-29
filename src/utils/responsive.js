@@ -12,22 +12,20 @@ export const BREAKPOINTS = {
 export const SIDEBAR_WIDTH = 248;
 
 const BASE_WIDTH = 375;
-const WEB_MOBILE_BOTTOM_MIN = 52;
+const WEB_MOBILE_BOTTOM_CUSHION = 6;
 
 function measureWebBottomInset(isMobile) {
-  if (Platform.OS !== 'web' || typeof window === 'undefined') {
-    return isMobile ? WEB_MOBILE_BOTTOM_MIN : 0;
+  if (Platform.OS !== 'web' || typeof window === 'undefined' || !isMobile) {
+    return 0;
   }
 
-  const fallback = isMobile ? WEB_MOBILE_BOTTOM_MIN : 0;
   const vv = window.visualViewport;
-
   if (!vv) {
-    return fallback;
+    return WEB_MOBILE_BOTTOM_CUSHION;
   }
 
   const obscured = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
-  return Math.max(obscured, fallback);
+  return obscured > 0 ? obscured + WEB_MOBILE_BOTTOM_CUSHION : WEB_MOBILE_BOTTOM_CUSHION;
 }
 
 export function useResponsive() {
@@ -67,7 +65,7 @@ export function useResponsive() {
   const contentMaxWidth = isWide ? 960 : isDesktop ? 860 : isTablet ? 720 : width;
   const contentPadding = isSmallPhone ? 14 : isMobile ? 18 : isTablet ? 24 : 32;
 
-  const bottomInset = Math.max(insets.bottom, webBottomInset);
+  const bottomInset = isWeb ? webBottomInset : insets.bottom;
   const tabBarContentHeight = 58;
   const tabBarHeight = isDesktop ? 0 : tabBarContentHeight + bottomInset + 8;
 

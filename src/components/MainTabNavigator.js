@@ -86,7 +86,7 @@ export default function MainTabNavigator({ currentScreen, variant = 'bottom' }) 
     );
   }
 
-  const tabBarBottomPad = isWeb ? bottomInset : 0;
+  const tabBarBottomPad = isWeb && bottomInset > 0 ? bottomInset : 0;
 
   return (
     <View
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     flexShrink: 0,
-    paddingTop: 6,
+    paddingTop: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.4,
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-    paddingVertical: 4,
+    paddingVertical: 2,
   },
   iconContainer: {
     padding: 8,

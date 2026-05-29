@@ -42,11 +42,16 @@ export default function AppLayout({
       {showHeader && <CustomHeader />}
       {showLocation && <LocationStatus />}
       <View style={styles.scrollHost}>{children}</View>
-      {showNav && (
-        <SafeAreaView edges={['bottom']} style={styles.tabBarSafeArea}>
-          <MainTabNavigator variant="bottom" currentScreen={currentScreen} />
-        </SafeAreaView>
-      )}
+      {showNav &&
+        (Platform.OS === 'web' ? (
+          <View style={styles.tabBarSafeArea}>
+            <MainTabNavigator variant="bottom" currentScreen={currentScreen} />
+          </View>
+        ) : (
+          <SafeAreaView edges={['bottom']} style={styles.tabBarSafeArea}>
+            <MainTabNavigator variant="bottom" currentScreen={currentScreen} />
+          </SafeAreaView>
+        ))}
     </SafeAreaView>
   );
 }
