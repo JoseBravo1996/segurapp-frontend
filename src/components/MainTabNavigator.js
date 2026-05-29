@@ -21,9 +21,11 @@ function TabButton({ tab, isActive, onPress, variant }) {
       style={[
         isSidebar ? styles.sidebarItem : styles.tabItem,
         isSidebar && isActive && styles.sidebarItemActive,
+        !isSidebar && isActive && styles.tabItemActive,
       ]}
       activeOpacity={0.7}
       onPress={onPress}
+      focusable={false}
     >
       <View style={[styles.iconContainer, isActive && styles.iconContainerActive]}>
         <Ionicons
@@ -34,6 +36,7 @@ function TabButton({ tab, isActive, onPress, variant }) {
       </View>
       {(isSidebar || !isSmallPhone) && (
         <Text
+          selectable={false}
           style={[
             isSidebar ? styles.sidebarLabel : styles.tabLabel,
             isActive && (isSidebar ? styles.sidebarLabelActive : styles.tabLabelActive),
@@ -43,7 +46,6 @@ function TabButton({ tab, isActive, onPress, variant }) {
           {tab.label}
         </Text>
       )}
-      {!isSidebar && isActive && <View style={styles.activeIndicator} />}
     </TouchableOpacity>
   );
 }
@@ -130,6 +132,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 2,
   },
+  tabItemActive: {
+    backgroundColor: 'rgba(255, 94, 0, 0.08)',
+    borderRadius: 12,
+  },
   iconContainer: {
     padding: 8,
     borderRadius: 15,
@@ -142,21 +148,12 @@ const styles = StyleSheet.create({
     color: '#64748B',
     marginTop: 2,
     fontWeight: '500',
+    textDecorationLine: 'none',
   },
   tabLabelActive: {
     color: '#FF5E00',
     fontWeight: '800',
-  },
-  activeIndicator: {
-    position: 'absolute',
-    bottom: 2,
-    width: 20,
-    height: 3,
-    backgroundColor: '#FF5E00',
-    borderRadius: 2,
-    shadowColor: '#FF5E00',
-    shadowOpacity: 0.5,
-    shadowRadius: 5,
+    textDecorationLine: 'none',
   },
 
   sidebar: {

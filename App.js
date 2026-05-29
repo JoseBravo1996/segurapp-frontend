@@ -23,17 +23,14 @@ function ensureWebViewportHeight() {
   if (Platform.OS !== 'web' || typeof document === 'undefined') return;
 
   const styleId = 'segurapp-web-layout';
-  if (document.getElementById(styleId)) return;
-
-  const style = document.createElement('style');
-  style.id = styleId;
-  style.textContent = `
+  const css = `
     html, body, #root {
       height: 100%;
       height: 100dvh;
       margin: 0;
       padding: 0;
       overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
     }
     #root {
       display: flex;
@@ -41,8 +38,53 @@ function ensureWebViewportHeight() {
       min-height: 100%;
       min-height: 100dvh;
     }
+    *:focus {
+      outline: none !important;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+    }
+    div[tabindex], [role="button"] {
+      caret-color: transparent;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    input, textarea {
+      -webkit-user-select: text;
+      user-select: text;
+      caret-color: auto;
+    }
+    [role="button"] *,
+    [role="button"] {
+      text-decoration: none !important;
+      border-bottom: none !important;
+      box-shadow: none !important;
+    }
   `;
-  document.head.appendChild(style);
+
+  let style = document.getElementById(styleId);
+  if (!style) {
+    style = document.createElement('style');
+    style.id = styleId;
+    document.head.appendChild(style);
+  }
+  style.textContent = css;
+
+  if (!window.__segurappTouchBlur) {
+    window.__segurappTouchBlur = true;
+    document.addEventListener(
+      'touchend',
+      () => {
+        const active = document.activeElement;
+        if (!active || active === document.body) return;
+        const tag = active.tagName;
+        if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') {
+          active.blur();
+        }
+      },
+      { passive: true }
+    );
+  }
 }
 
 function AppNavigator() {
