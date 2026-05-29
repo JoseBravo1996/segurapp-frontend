@@ -1,16 +1,15 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, ScrollView, TextInput, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TextInput, TouchableOpacity, Modal, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 
-import CustomHeader from '../components/CustomHeader';
+import AppLayout from '../components/AppLayout';
 import AlertMapPanel from '../components/AlertMapPanel';
-import LocationStatus from '../components/LocationStatus';
-import MainTabNavigator from '../components/MainTabNavigator';
 import * as segurappApi from '../services/segurappApi';
 import { triggerAlertWithLocation, markSafeAndNotify } from '../utils/alertHelper';
 import { ApiError } from '../services/apiClient';
 import { showAppAlert } from '../utils/showAppAlert';
+import { useResponsive, getScrollContentStyle, getModalWidth } from '../utils/responsive';
 
 function formatDate(isoString) {
   return new Date(isoString).toLocaleString('es-AR', {
@@ -23,6 +22,10 @@ function formatDate(isoString) {
 }
 
 export default function HistoryScreen() {
+  const responsive = useResponsive();
+  const scrollContent = getScrollContentStyle(responsive);
+  const modalWidth = getModalWidth(responsive, 0.92);
+  const modalHeight = responsive.isDesktop ? '70%' : responsive.isTablet ? '72%' : '78%';
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [alertHistory, setAlertHistory] = useState([]);
@@ -92,11 +95,8 @@ export default function HistoryScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <CustomHeader />
-      <LocationStatus />
-
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    <AppLayout currentScreen="Historial" backgroundColor="#F8F9FA">
+      <ScrollView contentContainerStyle={scrollContent} showsVerticalScrollIndicator={false}>
         <Text style={styles.mainTitle}>Historial de alertas</Text>
         <Text style={styles.mainSubtitle}>Gestión de eventos de peligro y ayuda</Text>
 
@@ -161,7 +161,7 @@ export default function HistoryScreen() {
       {/* --- MODAL TRASLÚCIDO CON MAPA Y ACCIONES --- */}
       <Modal animationType="fade" transparent={true} visible={modalVisible}>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { width: modalWidth, maxWidth: 720, height: modalHeight }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Gestión del Evento</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
@@ -200,15 +200,11 @@ export default function HistoryScreen() {
           </View>
         </View>
       </Modal>
-
-      <MainTabNavigator currentScreen="Historial" />
-    </SafeAreaView>
+    </AppLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
-  scrollContent: { padding: 20, paddingBottom: 110 },
   mainTitle: { fontSize: 22, fontWeight: 'bold', color: '#111' },
   mainSubtitle: { fontSize: 14, color: '#666', marginBottom: 20 },
   statsContainer: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 25 },
@@ -233,7 +229,7 @@ const styles = StyleSheet.create({
 
   // Estilos del Modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.7)', justifyContent: 'center', alignItems: 'center' },
-  modalContent: { width: '90%', height: '75%', backgroundColor: 'white', borderRadius: 25, padding: 20, overflow: 'hidden' },
+  modalContent: { backgroundColor: 'white', borderRadius: 25, padding: 20, overflow: 'hidden', maxHeight: '90%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
   modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#050A18' },
   mapContainer: { flex: 1, borderRadius: 15, overflow: 'hidden', marginBottom: 15 },

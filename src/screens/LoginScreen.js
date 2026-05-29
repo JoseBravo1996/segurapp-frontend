@@ -7,7 +7,6 @@ import {
   SafeAreaView,
   StatusBar,
   ScrollView,
-  Dimensions,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,10 +15,13 @@ import PrimaryButton from '../components/PrimaryButton';
 import { useAuth, ApiError } from '../context/AuthContext';
 import { showAppAlert } from '../utils/showAppAlert';
 import * as segurappApi from '../services/segurappApi';
-
-const { width } = Dimensions.get('window');
+import { useResponsive, getCardWidth } from '../utils/responsive';
 
 export default function LoginScreen({ navigation }) {
+  const responsive = useResponsive();
+  const cardWidth = getCardWidth(responsive, responsive.isDesktop ? 440 : 480);
+  const cardPadding = responsive.isSmallPhone ? 22 : responsive.isMobile ? 28 : 35;
+  const titleSize = responsive.isSmallPhone ? 28 : responsive.isDesktop ? 38 : 36;
   const { login, register } = useAuth();
   const [currentView, setCurrentView] = useState('login');
   const [loading, setLoading] = useState(false);
@@ -150,12 +152,12 @@ export default function LoginScreen({ navigation }) {
 
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.card}>
+        <View style={[styles.card, { width: cardWidth, padding: cardPadding }]}>
           <View style={styles.successIconCircle}>
-            <Ionicons name={icons[currentView]} size={100} color="#FF5E00" />
+            <Ionicons name={icons[currentView]} size={responsive.isSmallPhone ? 80 : 100} color="#FF5E00" />
           </View>
 
-          <Text style={styles.title}>{titles[currentView]}</Text>
+          <Text style={[styles.title, { fontSize: titleSize }]}>{titles[currentView]}</Text>
           <Text style={styles.successSubtitle}>{subtitles[currentView]}</Text>
 
           {currentView === 'success_forgot' && devResetToken && (
@@ -173,12 +175,12 @@ export default function LoginScreen({ navigation }) {
   if (currentView === 'reset') {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.card}>
+        <View style={[styles.card, { width: cardWidth, padding: cardPadding }]}>
           <TouchableOpacity onPress={() => setCurrentView('login')} style={styles.backButton}>
             <Ionicons name="arrow-back" size={28} color="#FF5E00" />
           </TouchableOpacity>
 
-          <Text style={styles.title}>Nueva contraseña</Text>
+          <Text style={[styles.title, { fontSize: titleSize }]}>Nueva contraseña</Text>
           <Text style={styles.subtitle}>Ingresá el código recibido y tu nueva clave</Text>
 
           <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
@@ -223,12 +225,14 @@ export default function LoginScreen({ navigation }) {
   if (currentView === 'forgot' || currentView === 'register') {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.card}>
+        <View style={[styles.card, { width: cardWidth, padding: cardPadding }]}>
           <TouchableOpacity onPress={() => setCurrentView('login')} style={styles.backButton}>
             <Ionicons name="arrow-back" size={28} color="#FF5E00" />
           </TouchableOpacity>
 
-          <Text style={styles.title}>{currentView === 'forgot' ? 'Recuperar' : 'Registro'}</Text>
+          <Text style={[styles.title, { fontSize: titleSize }]}>
+            {currentView === 'forgot' ? 'Recuperar' : 'Registro'}
+          </Text>
           <Text style={styles.subtitle}>
             {currentView === 'forgot'
               ? 'Enviaremos un código a tu correo'
@@ -303,13 +307,13 @@ export default function LoginScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" />
 
-      <View style={styles.card}>
+      <View style={[styles.card, { width: cardWidth, padding: cardPadding }]}>
         <View style={styles.header}>
-          <View style={styles.iconCircle}>
-            <Ionicons name="shield-checkmark" size={50} color="white" />
-            <View style={styles.pulseRing} />
+          <View style={[styles.iconCircle, responsive.isSmallPhone && styles.iconCircleSmall]}>
+            <Ionicons name="shield-checkmark" size={responsive.isSmallPhone ? 40 : 50} color="white" />
+            <View style={[styles.pulseRing, responsive.isSmallPhone && styles.pulseRingSmall]} />
           </View>
-          <Text style={styles.title}>
+          <Text style={[styles.title, { fontSize: titleSize }]}>
             Segur<Text style={{ color: '#FF5E00' }}>APP</Text>
           </Text>
           <Text style={styles.subtitle}>Sistemas de Protección Inteligente</Text>
@@ -363,12 +367,16 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050A18', alignItems: 'center', justifyContent: 'center' },
+  container: {
+    flex: 1,
+    backgroundColor: '#050A18',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
   card: {
     backgroundColor: '#0A1128',
-    width: width * 0.88,
     borderRadius: 35,
-    padding: 35,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(255, 94, 0, 0.2)',
@@ -378,6 +386,7 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 15,
     maxHeight: '92%',
+    maxWidth: 480,
   },
   header: { alignItems: 'center', marginBottom: 30 },
   iconCircle: {
@@ -390,6 +399,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     zIndex: 2,
   },
+  iconCircleSmall: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    marginBottom: 16,
+  },
   pulseRing: {
     position: 'absolute',
     width: 110,
@@ -398,7 +413,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'rgba(255, 94, 0, 0.3)',
   },
-  title: { fontSize: 36, fontWeight: '800', color: '#FFFFFF', textAlign: 'center', letterSpacing: -1 },
+  pulseRingSmall: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+  },
+  title: { fontWeight: '800', color: '#FFFFFF', textAlign: 'center', letterSpacing: -1 },
   subtitle: {
     fontSize: 14,
     color: '#64748B',

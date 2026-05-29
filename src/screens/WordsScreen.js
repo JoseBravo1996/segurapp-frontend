@@ -1,12 +1,11 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView, Modal, TextInput, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Modal, TextInput, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
-import CustomHeader from '../components/CustomHeader';
-import LocationStatus from '../components/LocationStatus';
-import MainTabNavigator from '../components/MainTabNavigator';
+import AppLayout from '../components/AppLayout';
 import InfoBox from '../components/InfoBox';
 import WordItem from '../components/WordItem';
+import { useResponsive, getScrollContentStyle, getModalWidth } from '../utils/responsive';
 
 import { useWords } from '../context/WordsContext';
 import * as segurappApi from '../services/segurappApi';
@@ -16,6 +15,9 @@ import { showAppAlert } from '../utils/showAppAlert';
 const MAX_KEYWORDS = 3;
 
 export default function WordsScreen({ navigation }) {
+  const responsive = useResponsive();
+  const scrollContent = getScrollContentStyle(responsive);
+  const modalWidth = getModalWidth(responsive);
   const { words, addWord, updateWord, removeWord } = useWords();
   const [globalShow, setGlobalShow] = useState(false);
   const [contacts, setContacts] = useState([]);
@@ -103,14 +105,9 @@ export default function WordsScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <CustomHeader />
-      <LocationStatus />
-
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* Header de la sección */}
-        <View style={styles.titleRow}>
+    <AppLayout currentScreen="Palabras" backgroundColor="#F8F9FA">
+      <ScrollView contentContainerStyle={scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={[styles.titleRow, responsive.isSmallPhone && styles.titleRowStack]}>
           <View style={{ flex: 1 }}>
             <Text style={styles.mainTitle}>Palabras clave</Text>
             <Text style={styles.mainSubtitle}>Configuradas: {words.length}/{MAX_KEYWORDS}</Text>
@@ -132,7 +129,7 @@ export default function WordsScreen({ navigation }) {
         </InfoBox>
 
         {/* Barra de control de visualización */}
-        <View style={styles.viewToggleRow}>
+        <View style={[styles.viewToggleRow, responsive.isSmallPhone && styles.viewToggleColumn]}>
           <TouchableOpacity 
             style={styles.viewToggleBtn}
             onPress={() => setGlobalShow(!globalShow)}
@@ -213,7 +210,7 @@ export default function WordsScreen({ navigation }) {
 
       <Modal visible={noContactsModalVisible} animationType="fade" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
+          <View style={[styles.modalContainer, { width: modalWidth }]}>
             <Text style={styles.modalTitle}>Sin contactos de emergencia</Text>
             <Text style={styles.noContactsBody}>
               Para crear una palabra clave necesitás al menos un contacto. Agregalo en la pestaña Contactos.
@@ -237,7 +234,7 @@ export default function WordsScreen({ navigation }) {
       {/* --- AGREGAR PALABRA --- */}
       <Modal visible={modalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
+          <View style={[styles.modalContainer, { width: modalWidth }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{editingWordId ? 'Editar palabra clave' : 'Agregar palabra clave'}</Text>
               <TouchableOpacity onPress={() => { setModalVisible(false); setEditingWordId(null); }}>
@@ -255,7 +252,7 @@ export default function WordsScreen({ navigation }) {
             />
 
             <Text style={styles.inputLabel}>Contacto de emergencia</Text>
-            <View style={styles.typeSelector}>
+            <View style={[styles.typeSelector, responsive.isMobile && styles.typeSelectorColumn]}>
               {contacts.map((c) => (
                 <TouchableOpacity
                   key={c.id}
@@ -279,16 +276,13 @@ export default function WordsScreen({ navigation }) {
           </View>
         </View>
       </Modal>
-
-      <MainTabNavigator currentScreen="Palabras" />
-    </SafeAreaView>
+    </AppLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
-  scrollContent: { padding: 20, paddingBottom: 110 },
-  titleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, gap: 12 },
+  titleRowStack: { flexDirection: 'column', alignItems: 'flex-start' },
   mainTitle: { fontSize: 22, fontWeight: 'bold', color: '#111' },
   mainSubtitle: { fontSize: 13, color: '#666' },
   addButton: {
@@ -301,7 +295,8 @@ const styles = StyleSheet.create({
   },
   addButtonText: { color: 'white', fontWeight: 'bold', marginLeft: 5 },
   
-  viewToggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15 },
+  viewToggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 15, gap: 10 },
+  viewToggleColumn: { flexDirection: 'column', alignItems: 'stretch' },
   viewToggleBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', padding: 8, borderRadius: 10, borderWidth: 1, borderColor: '#EEE', elevation: 2 },
   viewToggleLabel: { marginLeft: 8, fontWeight: '500', fontSize: 14 },
   counterBadge: { backgroundColor: '#F0F0F0', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
@@ -321,13 +316,14 @@ const styles = StyleSheet.create({
   tipRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
   tipText: { fontSize: 13, color: '#4C1D95', marginLeft: 10, flex: 1 },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
-  modalContainer: { backgroundColor: 'white', width: '90%', borderRadius: 20, padding: 25, elevation: 10 },
+  modalContainer: { backgroundColor: 'white', borderRadius: 20, padding: 25, elevation: 10, maxWidth: 520 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   modalTitle: { fontSize: 18, fontWeight: 'bold' },
   inputLabel: { fontWeight: 'bold', marginTop: 15, marginBottom: 5, color: '#333' },
   input: { backgroundColor: '#F5F5F5', borderRadius: 10, padding: 12, fontSize: 16 },
-  typeSelector: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
-  typeOption: { flex: 1, marginHorizontal: 4, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: '#DDD', alignItems: 'center' },
+  typeSelector: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 10, gap: 8 },
+  typeSelectorColumn: { flexDirection: 'column' },
+  typeOption: { flexGrow: 1, flexBasis: '30%', minWidth: 100, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: '#DDD', alignItems: 'center' },
   typeOptionActive: { backgroundColor: '#FF5E00', borderColor: '#FF5E00' },
   typeOptionText: { fontSize: 12, fontWeight: 'bold', color: '#666' },
   saveButton: { backgroundColor: '#FF5E00', paddingVertical: 15, borderRadius: 12, alignItems: 'center', marginTop: 30 },

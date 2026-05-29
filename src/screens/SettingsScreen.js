@@ -1,21 +1,21 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView, Linking, Dimensions, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Linking, ActivityIndicator } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import CustomHeader from '../components/CustomHeader';
-import LocationStatus from '../components/LocationStatus';
-import MainTabNavigator from '../components/MainTabNavigator';
+import AppLayout from '../components/AppLayout';
 import AppInput from '../components/AppInput';
 import PrimaryButton from '../components/PrimaryButton';
 import { useAuth } from '../context/AuthContext';
 import { showAppAlert } from '../utils/showAppAlert';
 import * as segurappApi from '../services/segurappApi';
 import { ApiError } from '../services/apiClient';
-
-const { width } = Dimensions.get('window');
+import { useResponsive, getScrollContentStyle } from '../utils/responsive';
 
 export default function SettingsScreen() {
+  const responsive = useResponsive();
+  const scrollContent = getScrollContentStyle(responsive);
+  const socialColWidth = responsive.isDesktop ? '15.5%' : responsive.isTablet ? '23%' : '31%';
   const [activeTab, setActiveTab] = useState('profile');
   const [selectedLang, setSelectedLang] = useState('Español');
   const [profileLoading, setProfileLoading] = useState(true);
@@ -212,7 +212,7 @@ export default function SettingsScreen() {
         <Text style={styles.cardTitle}>Seguinos en Redes</Text>
         <View style={styles.socialGrid}>
           {socials.map((s) => (
-            <TouchableOpacity key={s.name} style={styles.socialBtn} onPress={() => openSocial(s.url)}>
+            <TouchableOpacity key={s.name} style={[styles.socialBtn, { width: socialColWidth }]} onPress={() => openSocial(s.url)}>
               <Ionicons name={s.icon} size={28} color={s.color} />
               <Text style={styles.socialName}>{s.name}</Text>
             </TouchableOpacity>
@@ -223,11 +223,8 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <CustomHeader />
-      <LocationStatus />
-      
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+    <AppLayout currentScreen="Settings">
+      <ScrollView contentContainerStyle={scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={22} color="#050A18" />
@@ -266,14 +263,11 @@ export default function SettingsScreen() {
         </View>
 
       </ScrollView>
-      <MainTabNavigator currentScreen="Settings" />
-    </SafeAreaView>
+    </AppLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  scrollContent: { padding: 20, paddingBottom: 120 },
   headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 25 },
   backBtn: { padding: 8, backgroundColor: '#F1F5F9', borderRadius: 12 },
   mainTitle: { fontSize: 24, fontWeight: '800', marginLeft: 15, color: '#050A18' },
@@ -316,15 +310,14 @@ const styles = StyleSheet.create({
   footerCopy: { fontSize: 11, color: '#94A3B8', textAlign: 'center', marginTop: 20, fontWeight: '600' },
   
   socialGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  socialBtn: { 
-    width: '31%', // Ajustado para que entren 3 por fila con espacio
-    backgroundColor: '#F8FAFC', 
-    padding: 15, 
-    borderRadius: 20, 
-    alignItems: 'center', 
-    borderWidth: 1, 
+  socialBtn: {
+    backgroundColor: '#F8FAFC',
+    padding: 15,
+    borderRadius: 20,
+    alignItems: 'center',
+    borderWidth: 1,
     borderColor: '#E2E8F0',
-    marginBottom: 12
+    marginBottom: 12,
   },
   socialName: { fontSize: 10, color: '#050A18', marginTop: 8, fontWeight: '700' }
 });

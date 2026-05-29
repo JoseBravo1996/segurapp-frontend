@@ -1,18 +1,18 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, SafeAreaView, ScrollView, Modal, TextInput, Dimensions, Linking } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Modal, TextInput, Linking } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-import MainTabNavigator from '../components/MainTabNavigator';
-import CustomHeader from '../components/CustomHeader';
-import LocationStatus from '../components/LocationStatus';
-import MapPreview from '../components/MapPreview'; 
-
+import AppLayout from '../components/AppLayout';
+import MapPreview from '../components/MapPreview';
 import { useRoute } from '@react-navigation/native';
 import { showAppAlert } from '../utils/showAppAlert';
-
-const { width } = Dimensions.get('window');
+import { useResponsive, getScrollContentStyle, getModalWidth } from '../utils/responsive';
 
 export default function LocationScreen() {
+  const responsive = useResponsive();
+  const scrollContent = getScrollContentStyle(responsive);
+  const modalWidth = getModalWidth(responsive, 0.85);
+  const mapHeight = responsive.isDesktop ? 320 : responsive.isTablet ? 280 : 220;
   // Coordenadas actuales del usuario
   //const [userLocation] = useState({ latitude: -34.7634, longitude: -58.2302 });
   
@@ -70,14 +70,9 @@ export default function LocationScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <CustomHeader />
-      <LocationStatus />
-
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* --- MAPA CON ESTILO SEGURAPP --- */}
-        <View style={styles.mapWrapper}>
+    <AppLayout currentScreen="Ubicación">
+      <ScrollView contentContainerStyle={scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={[styles.mapWrapper, { height: mapHeight }]}>
           <MapPreview 
             latitude={latitude} 
             longitude={longitude} 
@@ -126,7 +121,7 @@ export default function LocationScreen() {
       {/* MODAL DE NUEVA ZONA */}
       <Modal visible={modalVisible} animationType="fade" transparent={true}>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { width: modalWidth }]}>
             <Text style={styles.modalTitle}>Nueva Zona Segura</Text>
             
             <View style={styles.inputGroup}>
@@ -163,19 +158,13 @@ export default function LocationScreen() {
           </View>
         </View>
       </Modal>
-
-      <MainTabNavigator currentScreen="Ubicación" />
-    </SafeAreaView>
+    </AppLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  scrollContent: { padding: 20, paddingBottom: 120 },
-  
-  mapWrapper: { 
-    width: '100%', 
-    height: 220, 
+  mapWrapper: {
+    width: '100%',
     borderRadius: 22, 
     overflow: 'hidden', 
     marginBottom: 25,
@@ -241,12 +230,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     alignItems: 'center' 
   },
-  modalContent: { 
-    backgroundColor: 'white', 
-    width: width * 0.85, 
-    borderRadius: 30, 
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 30,
     padding: 25,
-    elevation: 20
+    elevation: 20,
+    maxWidth: 480,
   },
   modalTitle: { 
     fontSize: 22, 

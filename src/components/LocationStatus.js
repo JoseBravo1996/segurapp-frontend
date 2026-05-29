@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, Animated, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
+import { useResponsive } from '../utils/responsive';
 
 const LOCATION_TIMEOUT_MS = 15000;
 
@@ -21,6 +22,7 @@ async function getPositionWithTimeout() {
 }
 
 export default function LocationStatus() {
+  const { contentPadding } = useResponsive();
   const [address, setAddress] = useState('Obteniendo ubicación...');
   const [errorMsg, setErrorMsg] = useState(null);
 
@@ -132,11 +134,13 @@ export default function LocationStatus() {
   });
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingHorizontal: contentPadding }]}>
       <Animated.View
         style={[
           styles.animatedBorder,
           {
+            left: contentPadding - 1,
+            right: contentPadding - 1,
             borderColor: statusColor,
             borderWidth: borderGlow,
             opacity: opacityGlow,
@@ -171,7 +175,6 @@ export default function LocationStatus() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
     marginTop: -20,
     zIndex: 10,
     position: 'relative',
@@ -179,8 +182,6 @@ const styles = StyleSheet.create({
   animatedBorder: {
     position: 'absolute',
     top: -1,
-    left: 19,
-    right: 19,
     bottom: -0.8,
     borderRadius: 20,
     shadowOffset: { width: 0, height: 0 },

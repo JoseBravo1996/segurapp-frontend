@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useResponsive, getModalWidth } from '../utils/responsive';
 
 export default function PanicConfirmModal({
   visible,
@@ -16,6 +17,8 @@ export default function PanicConfirmModal({
   onConfirm,
   loading,
 }) {
+  const responsive = useResponsive();
+  const modalWidth = getModalWidth(responsive, 0.94);
   const [selectedWord, setSelectedWord] = useState(null);
 
   React.useEffect(() => {
@@ -29,7 +32,7 @@ export default function PanicConfirmModal({
   return (
     <Modal visible={visible} animationType="fade" transparent>
       <View style={styles.overlay}>
-        <View style={styles.box}>
+        <View style={[styles.box, { width: modalWidth, maxWidth: 460 }]}>
           <View style={styles.header}>
             <Ionicons name="warning" size={28} color="#FF5E00" />
             <Text style={styles.title}>Confirmar alerta de pánico</Text>
@@ -95,8 +98,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 24,
     padding: 24,
-    width: '100%',
-    maxWidth: 400,
+    maxWidth: 460,
   },
   header: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 10 },
   title: { fontSize: 18, fontWeight: '800', color: '#050A18', flex: 1 },

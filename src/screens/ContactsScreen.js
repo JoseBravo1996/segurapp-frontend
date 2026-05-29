@@ -4,24 +4,19 @@ import {
   Text,
   View,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   Modal,
-  Dimensions,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
-import CustomHeader from '../components/CustomHeader';
-import LocationStatus from '../components/LocationStatus';
-import MainTabNavigator from '../components/MainTabNavigator';
+import AppLayout from '../components/AppLayout';
 import AppInput from '../components/AppInput';
 import * as segurappApi from '../services/segurappApi';
 import { ApiError } from '../services/apiClient';
 import { showAppAlert } from '../utils/showAppAlert';
-
-const { width } = Dimensions.get('window');
+import { useResponsive, getScrollContentStyle, getModalWidth } from '../utils/responsive';
 
 function splitName(fullName) {
   const parts = fullName.trim().split(/\s+/);
@@ -30,6 +25,9 @@ function splitName(fullName) {
 }
 
 export default function ContactsScreen() {
+  const responsive = useResponsive();
+  const scrollContent = getScrollContentStyle(responsive);
+  const modalWidth = getModalWidth(responsive);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -143,12 +141,9 @@ export default function ContactsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <CustomHeader />
-      <LocationStatus />
-
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.titleRow}>
+    <AppLayout currentScreen="Contactos">
+      <ScrollView contentContainerStyle={scrollContent} showsVerticalScrollIndicator={false}>
+        <View style={[styles.titleRow, responsive.isSmallPhone && styles.titleRowStack]}>
           <View>
             <Text style={styles.mainTitle}>Contactos de Red</Text>
             <Text style={styles.mainSubtitle}>{contacts.length} personas vinculadas</Text>
@@ -202,7 +197,7 @@ export default function ContactsScreen() {
 
       <Modal visible={modalVisible} animationType="fade" transparent>
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
+          <View style={[styles.modalContainer, { width: modalWidth }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>{editingId ? 'Editar contacto' : 'Registrar contacto'}</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
@@ -246,20 +241,21 @@ export default function ContactsScreen() {
           </View>
         </View>
       </Modal>
-
-      <MainTabNavigator currentScreen="Contactos" />
-    </SafeAreaView>
+    </AppLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFFFFF' },
-  scrollContent: { padding: 20, paddingBottom: 120 },
   titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 25,
+    gap: 12,
+  },
+  titleRowStack: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
   },
   mainTitle: { fontSize: 22, fontWeight: '800', color: '#050A18' },
   mainSubtitle: { fontSize: 14, color: '#64748B', fontWeight: '500' },
@@ -324,7 +320,6 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     backgroundColor: 'white',
-    width: width * 0.9,
     borderRadius: 30,
     padding: 25,
     maxHeight: '85%',
