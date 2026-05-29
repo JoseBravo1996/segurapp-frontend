@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, SafeAreaView, Platform, StatusBar } from 'react-native';
+import { View, Platform, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useResponsive } from '../utils/responsive';
 import CustomHeader from './CustomHeader';
 import LocationStatus from './LocationStatus';
@@ -20,7 +21,7 @@ export default function AppLayout({
       <View style={styles.rootRow}>
         <MainTabNavigator variant="sidebar" currentScreen={currentScreen} />
         <View style={[styles.mainColumn, { backgroundColor }]}>
-          <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
+          <SafeAreaView style={[styles.safeArea, { backgroundColor }]} edges={['top', 'left', 'right']}>
             {Platform.OS === 'android' && (
               <StatusBar barStyle="dark-content" backgroundColor={backgroundColor} />
             )}
@@ -34,7 +35,7 @@ export default function AppLayout({
   }
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor }]} edges={['top', 'left', 'right']}>
       {Platform.OS === 'android' && (
         <StatusBar barStyle={backgroundColor === '#050A18' ? 'light-content' : 'dark-content'} />
       )}

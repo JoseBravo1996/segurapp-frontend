@@ -22,11 +22,11 @@ async function getPositionWithTimeout() {
 }
 
 export default function LocationStatus() {
-  const { contentPadding } = useResponsive();
+  const { contentPadding, contentMaxWidth, isMobile, isDesktop, isSmallPhone } = useResponsive();
   const [address, setAddress] = useState('Obteniendo ubicación...');
   const [errorMsg, setErrorMsg] = useState(null);
 
-  const borderPulseAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(0.4)).current;
   const cancelledRef = useRef(false);
 
   useEffect(() => {
@@ -34,16 +34,8 @@ export default function LocationStatus() {
 
     Animated.loop(
       Animated.sequence([
-        Animated.timing(borderPulseAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: false,
-        }),
-        Animated.timing(borderPulseAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: false,
-        }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 900, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 0.4, duration: 900, useNativeDriver: true }),
       ])
     ).start();
 
@@ -58,8 +50,8 @@ export default function LocationStatus() {
           const street = item.street || item.name || 'Ubicación detectada';
           const number = item.streetNumber || '';
           const city = item.city || item.subregion || item.region || '';
-          const parts = [`${street} ${number}`.trim(), city, 'Argentina'].filter(Boolean);
-          setAddress(parts.join(', '));
+          const parts = [`${street} ${number}`.trim(), city].filter(Boolean);
+          setAddress(parts.length > 0 ? parts.join(', ') : coordsLabel);
         } else {
           setAddress(coordsLabel);
         }
@@ -79,7 +71,7 @@ export default function LocationStatus() {
           setErrorMsg('Permiso denegado');
           setAddress(
             Platform.OS === 'web'
-              ? 'Permití la ubicación en el navegador (icono del candado en la barra de dirección)'
+              ? 'Permití la ubicación en el navegador'
               : 'Ubicación no disponible'
           );
           return;
@@ -93,7 +85,7 @@ export default function LocationStatus() {
             if (!cancelledRef.current) {
               setAddress(
                 Platform.OS === 'web'
-                  ? 'No se pudo obtener la ubicación. Revisá que el sitio tenga permiso de ubicación.'
+                  ? 'No se pudo obtener la ubicación'
                   : 'No se pudo obtener la ubicación'
               );
             }
@@ -121,50 +113,45 @@ export default function LocationStatus() {
     };
   }, []);
 
-  const statusColor = errorMsg ? '#FF0000' : '#00FF41';
-
-  const borderGlow = borderPulseAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [1, 3],
-  });
-
-  const opacityGlow = borderPulseAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 1],
-  });
+  const isActive = !errorMsg;
+  const accentColor = isActive ? '#22C55E' : '#EF4444';
 
   return (
-    <View style={[styles.container, { paddingHorizontal: contentPadding }]}>
-      <Animated.View
+    <View style={[styles.wrapper, { paddingHorizontal: contentPadding }]}>
+      <View
         style={[
-          styles.animatedBorder,
-          {
-            left: contentPadding - 1,
-            right: contentPadding - 1,
-            borderColor: statusColor,
-            borderWidth: borderGlow,
-            opacity: opacityGlow,
-            shadowColor: statusColor,
-            shadowRadius: borderPulseAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [4, 12],
-            }),
-          },
+          styles.card,
+          { borderLeftColor: accentColor, maxWidth: contentMaxWidth },
+          errorMsg && styles.cardError,
+          isDesktop && styles.cardDesktop,
         ]}
-      />
-
-      <View style={styles.card}>
-        <View style={[styles.iconContainer, { backgroundColor: `${statusColor}20` }]}>
-          <Ionicons name="location-sharp" size={20} color={statusColor} />
+      >
+        <View style={[styles.iconWrap, { backgroundColor: `${accentColor}18` }]}>
+          <Ionicons
+            name={isActive ? 'navigate' : 'location-outline'}
+            size={isSmallPhone ? 16 : 18}
+            color={accentColor}
+          />
         </View>
-        <View style={styles.textContainer}>
-          <View style={styles.titleRow}>
-            <Text style={styles.title}>
-              {errorMsg ? 'SISTEMA DESCONECTADO' : 'MONITOREO ACTIVO'}
+
+        <View style={styles.body}>
+          <View style={styles.topRow}>
+            <Text style={[styles.statusLabel, { color: accentColor }]}>
+              {isActive ? 'Monitoreo activo' : 'GPS desconectado'}
             </Text>
-            {!errorMsg && <View style={[styles.dot, { backgroundColor: statusColor }]} />}
+            {isActive && (
+              <View style={[styles.liveBadge, { borderColor: `${accentColor}40` }]}>
+                <Animated.View
+                  style={[styles.liveDot, { backgroundColor: accentColor, opacity: pulseAnim }]}
+                />
+                <Text style={[styles.liveText, { color: accentColor }]}>En vivo</Text>
+              </View>
+            )}
           </View>
-          <Text style={styles.address} numberOfLines={2}>
+          <Text
+            style={[styles.address, isSmallPhone && styles.addressSmall]}
+            numberOfLines={isMobile ? 1 : 2}
+          >
             {address}
           </Text>
         </View>
@@ -174,40 +161,89 @@ export default function LocationStatus() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginTop: -20,
-    zIndex: 10,
-    position: 'relative',
-  },
-  animatedBorder: {
-    position: 'absolute',
-    top: -1,
-    bottom: -0.8,
-    borderRadius: 20,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 100,
-    elevation: 20,
+  wrapper: {
+    marginTop: 10,
+    marginBottom: 12,
+    alignItems: 'center',
+    width: '100%',
   },
   card: {
+    width: '100%',
     flexDirection: 'row',
-    backgroundColor: '#050A18',
-    padding: 15,
-    borderRadius: 18,
     alignItems: 'center',
-    zIndex: 2,
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderLeftWidth: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  iconContainer: {
-    padding: 10,
-    borderRadius: 12,
-    marginRight: 15,
+  cardDesktop: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 16,
   },
-  textContainer: { flex: 1 },
-  titleRow: { flexDirection: 'row', alignItems: 'center' },
-  title: { fontWeight: '900', fontSize: 12, color: '#FFFFFF', marginRight: 8, letterSpacing: 1 },
-  dot: {
+  cardError: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+  },
+  iconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    flexShrink: 0,
+  },
+  body: {
+    flex: 1,
+    minWidth: 0,
+  },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 2,
+  },
+  statusLabel: {
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  liveBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    borderWidth: 1,
+    backgroundColor: '#F0FDF4',
+  },
+  liveDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
+    marginRight: 5,
   },
-  address: { color: '#E0E0E0', fontSize: 12, marginTop: 4, fontWeight: '500' },
+  liveText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  address: {
+    color: '#64748B',
+    fontSize: 12,
+    fontWeight: '500',
+    lineHeight: 17,
+  },
+  addressSmall: {
+    fontSize: 11,
+  },
 });

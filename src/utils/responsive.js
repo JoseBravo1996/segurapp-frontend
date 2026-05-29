@@ -1,4 +1,5 @@
 import { useWindowDimensions, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export const BREAKPOINTS = {
   sm: 380,
@@ -13,12 +14,14 @@ const BASE_WIDTH = 375;
 
 export function useResponsive() {
   const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
 
   const isSmallPhone = width < BREAKPOINTS.sm;
   const isMobile = width < BREAKPOINTS.md;
   const isTablet = width >= BREAKPOINTS.md && width < BREAKPOINTS.lg;
   const isDesktop = width >= BREAKPOINTS.lg;
   const isWide = width >= BREAKPOINTS.xl;
+  const isWeb = Platform.OS === 'web';
 
   const scale = (size) => Math.round((width / BASE_WIDTH) * size);
   const moderateScale = (size, factor = 0.45) =>
@@ -27,13 +30,12 @@ export function useResponsive() {
   const contentMaxWidth = isWide ? 960 : isDesktop ? 860 : isTablet ? 720 : width;
   const contentPadding = isSmallPhone ? 14 : isMobile ? 18 : isTablet ? 24 : 32;
 
-  const tabBarHeight = Platform.OS === 'web'
-    ? (isMobile ? 88 : 72)
-    : Platform.OS === 'ios'
-      ? (isMobile ? 95 : 80)
-      : isMobile
-        ? 75
-        : 72;
+  const webBottomFallback = isWeb && isMobile ? 20 : 0;
+  const bottomInset = Math.max(insets.bottom, webBottomFallback);
+  const tabBarContentHeight = 64;
+  const tabBarHeight = isDesktop
+    ? 0
+    : tabBarContentHeight + bottomInset + (Platform.OS === 'ios' ? 4 : 6);
 
   return {
     width,
@@ -49,7 +51,9 @@ export function useResponsive() {
     contentPadding,
     sidebarWidth: SIDEBAR_WIDTH,
     tabBarHeight,
-    isWeb: Platform.OS === 'web',
+    bottomInset,
+    tabBarContentHeight,
+    isWeb,
   };
 }
 
@@ -58,7 +62,7 @@ export function getScrollContentStyle(responsive, extra = {}) {
 
   return {
     padding: contentPadding,
-    paddingBottom: isDesktop ? contentPadding + 40 : tabBarHeight + 36,
+    paddingBottom: isDesktop ? contentPadding + 40 : tabBarHeight + 16,
     maxWidth: contentMaxWidth,
     width: '100%',
     alignSelf: 'center',

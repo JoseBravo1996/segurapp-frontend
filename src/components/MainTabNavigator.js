@@ -50,7 +50,7 @@ function TabButton({ tab, isActive, onPress, variant }) {
 
 export default function MainTabNavigator({ currentScreen, variant = 'bottom' }) {
   const navigation = useNavigation();
-  const { tabBarHeight } = useResponsive();
+  const { tabBarContentHeight, bottomInset } = useResponsive();
 
   const navigate = (id) => navigation.navigate(id);
 
@@ -87,7 +87,15 @@ export default function MainTabNavigator({ currentScreen, variant = 'bottom' }) 
   }
 
   return (
-    <View style={[styles.tabBar, { height: tabBarHeight }]}>
+    <View
+      style={[
+        styles.tabBar,
+        {
+          paddingBottom: bottomInset + (Platform.OS === 'ios' ? 4 : 8),
+          minHeight: tabBarContentHeight + bottomInset,
+        },
+      ]}
+    >
       {TABS.map((tab) => (
         <TabButton
           key={tab.id}
@@ -113,7 +121,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    paddingBottom: Platform.OS === 'ios' ? 25 : 10,
+    paddingTop: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.4,
@@ -145,7 +153,7 @@ const styles = StyleSheet.create({
   },
   activeIndicator: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? -5 : 0,
+    bottom: 2,
     width: 20,
     height: 3,
     backgroundColor: '#FF5E00',

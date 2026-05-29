@@ -16,17 +16,19 @@ import { showAppAlert } from '../utils/showAppAlert';
 
 export default function HomeScreen({ navigation }) {
   const responsive = useResponsive();
-  const { isSmallPhone, isMobile, isDesktop, moderateScale, height } = responsive;
+  const { isSmallPhone, isMobile, isDesktop, height } = responsive;
 
   const panicSize = useMemo(() => {
     if (height < 680) return 150;
     if (isSmallPhone) return 165;
     if (isMobile) return 190;
-    if (isDesktop) return 250;
-    return 220;
+    if (isDesktop) return 220;
+    return 210;
   }, [height, isSmallPhone, isMobile, isDesktop]);
 
-  const panicIconSize = Math.round(panicSize * 0.4);
+  const panicIconSize = Math.round(panicSize * 0.36);
+  const panicFontSize = Math.max(14, Math.min(18, Math.round(panicSize * 0.08)));
+  const instructionFontSize = isDesktop ? 18 : isMobile ? 16 : 17;
   const [contacts, setContacts] = useState([]);
   const [sendingAlert, setSendingAlert] = useState(false);
   const [markingSafe, setMarkingSafe] = useState(false);
@@ -137,7 +139,7 @@ export default function HomeScreen({ navigation }) {
   return (
     <AppLayout currentScreen="Emergencia">
       <ScreenScrollView contentContainerStyle={{ alignItems: 'center' }}>
-        <Text style={[styles.instructionText, { fontSize: moderateScale(18) }]}>
+        <Text style={[styles.instructionText, { fontSize: instructionFontSize }]}>
           Presioná para enviar alerta
         </Text>
 
@@ -167,7 +169,7 @@ export default function HomeScreen({ navigation }) {
             >
               <View style={styles.panicInnerCircle}>
                 <Ionicons name="alert-circle" size={panicIconSize} color="#FF5E00" />
-                <Text style={[styles.panicText, { fontSize: moderateScale(22) }]}>PÁNICO</Text>
+                <Text style={[styles.panicText, { fontSize: panicFontSize }]}>PÁNICO</Text>
               </View>
             </View>
           </TouchableOpacity>
@@ -312,7 +314,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   panicInnerCircle: { alignItems: 'center', justifyContent: 'center' },
-  panicText: { color: 'white', fontWeight: '900', marginTop: 5, letterSpacing: 2 },
+  panicText: { color: 'white', fontWeight: '900', marginTop: 4, letterSpacing: 1.5 },
   subInstruction: { color: '#64748B', marginTop: 16, marginBottom: 16, fontSize: 13, fontWeight: '600', textAlign: 'center' },
   safeButton: {
     flexDirection: 'row',

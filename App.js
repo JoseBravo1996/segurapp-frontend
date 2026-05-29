@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View, Platform, StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './src/screens/HomeScreen';
@@ -36,6 +37,9 @@ function ensureWebViewportHeight() {
       display: flex;
       flex-direction: column;
       min-height: 100%;
+    }
+    body {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
     }
   `;
   document.head.appendChild(style);
@@ -92,8 +96,10 @@ const styles = StyleSheet.create({
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AppNavigator />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <AppNavigator />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
