@@ -1,5 +1,5 @@
-import React from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { ActivityIndicator, View, Platform, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './src/screens/HomeScreen';
@@ -18,7 +18,33 @@ import { navigationRef } from './src/navigation/navigationRef';
 
 const Stack = createStackNavigator();
 
+function ensureWebViewportHeight() {
+  if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+
+  const styleId = 'segurapp-web-layout';
+  if (document.getElementById(styleId)) return;
+
+  const style = document.createElement('style');
+  style.id = styleId;
+  style.textContent = `
+    html, body, #root {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    #root {
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 function AppNavigator() {
+  useEffect(() => {
+    ensureWebViewportHeight();
+  }, []);
   const { isReady, isAuthenticated } = useAuth();
 
   if (!isReady) {
@@ -30,17 +56,19 @@ function AppNavigator() {
   }
 
   return (
-    <WordsProvider>
-      <NavigationContainer ref={navigationRef}>
-        <PushNotificationProvider />
-        <VoiceListenerProvider />
-        <Stack.Navigator
-          initialRouteName={isAuthenticated ? 'Emergencia' : 'Login'}
-          screenOptions={{
-            headerShown: false,
-            animationEnabled: false,
-          }}
-        >
+    <View style={styles.appRoot}>
+      <WordsProvider>
+        <NavigationContainer ref={navigationRef}>
+          <PushNotificationProvider />
+          <VoiceListenerProvider />
+          <Stack.Navigator
+            initialRouteName={isAuthenticated ? 'Emergencia' : 'Login'}
+            screenOptions={{
+              headerShown: false,
+              animationEnabled: false,
+              cardStyle: { flex: 1 },
+            }}
+          >
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Emergencia" component={HomeScreen} />
           <Stack.Screen name="Palabras" component={WordsScreen} />
@@ -51,8 +79,16 @@ function AppNavigator() {
         </Stack.Navigator>
       </NavigationContainer>
     </WordsProvider>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  appRoot: {
+    flex: 1,
+    ...(Platform.OS === 'web' ? { minHeight: '100vh' } : {}),
+  },
+});
 
 export default function App() {
   return (

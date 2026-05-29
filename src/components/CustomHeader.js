@@ -8,7 +8,9 @@ import { useResponsive } from '../utils/responsive';
 export default function CustomHeader() {
   const navigation = useNavigation();
   const { logout } = useAuth();
-  const { isMobile, isDesktop, contentPadding } = useResponsive();
+  const { isMobile, isDesktop, contentPadding, isWeb } = useResponsive();
+
+  const topPadding = isDesktop ? 20 : isWeb ? 12 : Platform.OS === 'ios' ? 60 : 50;
 
   const handleLogout = async () => {
     await logout();
@@ -21,7 +23,7 @@ export default function CustomHeader() {
         styles.header,
         {
           paddingHorizontal: contentPadding,
-          paddingTop: isDesktop ? 20 : Platform.OS === 'ios' ? 60 : 50,
+          paddingTop: topPadding,
           paddingBottom: isDesktop ? 16 : 20,
         },
       ]}

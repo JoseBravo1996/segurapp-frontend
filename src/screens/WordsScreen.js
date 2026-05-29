@@ -3,9 +3,10 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Modal, TextInput,
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import AppLayout from '../components/AppLayout';
+import ScreenScrollView from '../components/ScreenScrollView';
 import InfoBox from '../components/InfoBox';
 import WordItem from '../components/WordItem';
-import { useResponsive, getScrollContentStyle, getModalWidth } from '../utils/responsive';
+import { useResponsive, getModalWidth } from '../utils/responsive';
 
 import { useWords } from '../context/WordsContext';
 import * as segurappApi from '../services/segurappApi';
@@ -16,7 +17,6 @@ const MAX_KEYWORDS = 3;
 
 export default function WordsScreen({ navigation }) {
   const responsive = useResponsive();
-  const scrollContent = getScrollContentStyle(responsive);
   const modalWidth = getModalWidth(responsive);
   const { words, addWord, updateWord, removeWord } = useWords();
   const [globalShow, setGlobalShow] = useState(false);
@@ -106,7 +106,7 @@ export default function WordsScreen({ navigation }) {
 
   return (
     <AppLayout currentScreen="Palabras" backgroundColor="#F8F9FA">
-      <ScrollView contentContainerStyle={scrollContent} showsVerticalScrollIndicator={false}>
+      <ScreenScrollView showsVerticalScrollIndicator={false}>
         <View style={[styles.titleRow, responsive.isSmallPhone && styles.titleRowStack]}>
           <View style={{ flex: 1 }}>
             <Text style={styles.mainTitle}>Palabras clave</Text>
@@ -206,7 +206,7 @@ export default function WordsScreen({ navigation }) {
           </View>
         </InfoBox>
 
-      </ScrollView>
+      </ScreenScrollView>
 
       <Modal visible={noContactsModalVisible} animationType="fade" transparent>
         <View style={styles.modalOverlay}>

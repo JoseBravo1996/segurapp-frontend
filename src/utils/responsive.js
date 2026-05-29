@@ -27,7 +27,13 @@ export function useResponsive() {
   const contentMaxWidth = isWide ? 960 : isDesktop ? 860 : isTablet ? 720 : width;
   const contentPadding = isSmallPhone ? 14 : isMobile ? 18 : isTablet ? 24 : 32;
 
-  const tabBarHeight = Platform.OS === 'ios' ? (isMobile ? 95 : 80) : isMobile ? 75 : 72;
+  const tabBarHeight = Platform.OS === 'web'
+    ? (isMobile ? 88 : 72)
+    : Platform.OS === 'ios'
+      ? (isMobile ? 95 : 80)
+      : isMobile
+        ? 75
+        : 72;
 
   return {
     width,
@@ -52,7 +58,7 @@ export function getScrollContentStyle(responsive, extra = {}) {
 
   return {
     padding: contentPadding,
-    paddingBottom: isDesktop ? contentPadding + 32 : tabBarHeight + 28,
+    paddingBottom: isDesktop ? contentPadding + 40 : tabBarHeight + 36,
     maxWidth: contentMaxWidth,
     width: '100%',
     alignSelf: 'center',

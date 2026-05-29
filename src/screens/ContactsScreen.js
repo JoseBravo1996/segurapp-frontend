@@ -12,11 +12,12 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import { useFocusEffect } from '@react-navigation/native';
 import AppLayout from '../components/AppLayout';
+import ScreenScrollView from '../components/ScreenScrollView';
 import AppInput from '../components/AppInput';
 import * as segurappApi from '../services/segurappApi';
 import { ApiError } from '../services/apiClient';
 import { showAppAlert } from '../utils/showAppAlert';
-import { useResponsive, getScrollContentStyle, getModalWidth } from '../utils/responsive';
+import { useResponsive, getModalWidth } from '../utils/responsive';
 
 function splitName(fullName) {
   const parts = fullName.trim().split(/\s+/);
@@ -26,7 +27,6 @@ function splitName(fullName) {
 
 export default function ContactsScreen() {
   const responsive = useResponsive();
-  const scrollContent = getScrollContentStyle(responsive);
   const modalWidth = getModalWidth(responsive);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -142,7 +142,7 @@ export default function ContactsScreen() {
 
   return (
     <AppLayout currentScreen="Contactos">
-      <ScrollView contentContainerStyle={scrollContent} showsVerticalScrollIndicator={false}>
+      <ScreenScrollView showsVerticalScrollIndicator={false}>
         <View style={[styles.titleRow, responsive.isSmallPhone && styles.titleRowStack]}>
           <View>
             <Text style={styles.mainTitle}>Contactos de Red</Text>
@@ -193,7 +193,7 @@ export default function ContactsScreen() {
             </Text>
           </View>
         )}
-      </ScrollView>
+      </ScreenScrollView>
 
       <Modal visible={modalVisible} animationType="fade" transparent>
         <View style={styles.modalOverlay}>

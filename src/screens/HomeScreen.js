@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState, useMemo } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Animated, ActivityIndicator, Platform } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Animated, ActivityIndicator, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import AppLayout from '../components/AppLayout';
+import ScreenScrollView from '../components/ScreenScrollView';
 import PanicConfirmModal from '../components/PanicConfirmModal';
-import { useResponsive, getScrollContentStyle } from '../utils/responsive';
+import { useResponsive } from '../utils/responsive';
 
 import { useWords } from '../context/WordsContext';
 import VoiceService from '../services/VoiceService';
@@ -15,17 +16,17 @@ import { showAppAlert } from '../utils/showAppAlert';
 
 export default function HomeScreen({ navigation }) {
   const responsive = useResponsive();
-  const { isSmallPhone, isMobile, isDesktop, moderateScale } = responsive;
+  const { isSmallPhone, isMobile, isDesktop, moderateScale, height } = responsive;
 
   const panicSize = useMemo(() => {
-    if (isSmallPhone) return 170;
-    if (isMobile) return 200;
-    if (isDesktop) return 260;
-    return 230;
-  }, [isSmallPhone, isMobile, isDesktop]);
+    if (height < 680) return 150;
+    if (isSmallPhone) return 165;
+    if (isMobile) return 190;
+    if (isDesktop) return 250;
+    return 220;
+  }, [height, isSmallPhone, isMobile, isDesktop]);
 
   const panicIconSize = Math.round(panicSize * 0.4);
-  const scrollContent = getScrollContentStyle(responsive, { alignItems: 'center' });
   const [contacts, setContacts] = useState([]);
   const [sendingAlert, setSendingAlert] = useState(false);
   const [markingSafe, setMarkingSafe] = useState(false);
@@ -135,7 +136,7 @@ export default function HomeScreen({ navigation }) {
 
   return (
     <AppLayout currentScreen="Emergencia">
-      <ScrollView contentContainerStyle={scrollContent}>
+      <ScreenScrollView contentContainerStyle={{ alignItems: 'center' }}>
         <Text style={[styles.instructionText, { fontSize: moderateScale(18) }]}>
           Presioná para enviar alerta
         </Text>
@@ -235,14 +236,14 @@ export default function HomeScreen({ navigation }) {
         <View
           style={[
             styles.actionButtonsRow,
-            isSmallPhone && styles.actionButtonsColumn,
+            isMobile && styles.actionButtonsColumn,
           ]}
         >
           <TouchableOpacity
             style={[
               styles.actionButton,
               { borderColor: '#FF5E00' },
-              isSmallPhone && styles.actionButtonFull,
+              isMobile && styles.actionButtonFull,
             ]}
             onPress={async () => {
               if (!lastAlertWord && words.length === 0) {
@@ -269,14 +270,14 @@ export default function HomeScreen({ navigation }) {
             style={[
               styles.actionButton,
               { borderColor: '#050A18' },
-              isSmallPhone && styles.actionButtonFull,
+              isMobile && styles.actionButtonFull,
             ]}
             onPress={() => navigation.navigate('Ubicación')}
           >
             <Text style={[styles.actionButtonText, { color: '#050A18' }]}>Compartir ubicación</Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
+      </ScreenScrollView>
 
       <PanicConfirmModal
         visible={panicModalVisible}
@@ -291,7 +292,7 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  instructionText: { fontWeight: '800', color: '#050A18', marginBottom: 30, marginTop: 10, textAlign: 'center' },
+  instructionText: { fontWeight: '800', color: '#050A18', marginBottom: 20, marginTop: 6, textAlign: 'center' },
   panicButton: {
     backgroundColor: '#050A18',
     justifyContent: 'center',
@@ -312,7 +313,7 @@ const styles = StyleSheet.create({
   },
   panicInnerCircle: { alignItems: 'center', justifyContent: 'center' },
   panicText: { color: 'white', fontWeight: '900', marginTop: 5, letterSpacing: 2 },
-  subInstruction: { color: '#64748B', marginTop: 25, marginBottom: 25, fontSize: 13, fontWeight: '600', textAlign: 'center' },
+  subInstruction: { color: '#64748B', marginTop: 16, marginBottom: 16, fontSize: 13, fontWeight: '600', textAlign: 'center' },
   safeButton: {
     flexDirection: 'row',
     backgroundColor: 'white',
@@ -352,7 +353,7 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 20,
     borderRadius: 20,
-    marginBottom: 30,
+    marginBottom: 20,
     borderLeftWidth: 6,
     borderLeftColor: '#FF5E00',
   },

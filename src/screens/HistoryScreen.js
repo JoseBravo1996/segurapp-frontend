@@ -4,12 +4,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 
 import AppLayout from '../components/AppLayout';
+import ScreenScrollView from '../components/ScreenScrollView';
 import AlertMapPanel from '../components/AlertMapPanel';
 import * as segurappApi from '../services/segurappApi';
 import { triggerAlertWithLocation, markSafeAndNotify } from '../utils/alertHelper';
 import { ApiError } from '../services/apiClient';
 import { showAppAlert } from '../utils/showAppAlert';
-import { useResponsive, getScrollContentStyle, getModalWidth } from '../utils/responsive';
+import { useResponsive, getModalWidth } from '../utils/responsive';
 
 function formatDate(isoString) {
   return new Date(isoString).toLocaleString('es-AR', {
@@ -23,7 +24,6 @@ function formatDate(isoString) {
 
 export default function HistoryScreen() {
   const responsive = useResponsive();
-  const scrollContent = getScrollContentStyle(responsive);
   const modalWidth = getModalWidth(responsive, 0.92);
   const modalHeight = responsive.isDesktop ? '70%' : responsive.isTablet ? '72%' : '78%';
   const [modalVisible, setModalVisible] = useState(false);
@@ -96,7 +96,7 @@ export default function HistoryScreen() {
 
   return (
     <AppLayout currentScreen="Historial" backgroundColor="#F8F9FA">
-      <ScrollView contentContainerStyle={scrollContent} showsVerticalScrollIndicator={false}>
+      <ScreenScrollView showsVerticalScrollIndicator={false}>
         <Text style={styles.mainTitle}>Historial de alertas</Text>
         <Text style={styles.mainSubtitle}>Gestión de eventos de peligro y ayuda</Text>
 
@@ -156,7 +156,7 @@ export default function HistoryScreen() {
             </View>
           </TouchableOpacity>
         ))}
-      </ScrollView>
+      </ScreenScrollView>
 
       {/* --- MODAL TRASLÚCIDO CON MAPA Y ACCIONES --- */}
       <Modal animationType="fade" transparent={true} visible={modalVisible}>

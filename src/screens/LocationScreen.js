@@ -3,14 +3,14 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Modal, TextInput,
 import { Ionicons } from '@expo/vector-icons';
 
 import AppLayout from '../components/AppLayout';
+import ScreenScrollView from '../components/ScreenScrollView';
 import MapPreview from '../components/MapPreview';
 import { useRoute } from '@react-navigation/native';
 import { showAppAlert } from '../utils/showAppAlert';
-import { useResponsive, getScrollContentStyle, getModalWidth } from '../utils/responsive';
+import { useResponsive, getModalWidth } from '../utils/responsive';
 
 export default function LocationScreen() {
   const responsive = useResponsive();
-  const scrollContent = getScrollContentStyle(responsive);
   const modalWidth = getModalWidth(responsive, 0.85);
   const mapHeight = responsive.isDesktop ? 320 : responsive.isTablet ? 280 : 220;
   // Coordenadas actuales del usuario
@@ -71,7 +71,7 @@ export default function LocationScreen() {
 
   return (
     <AppLayout currentScreen="Ubicación">
-      <ScrollView contentContainerStyle={scrollContent} showsVerticalScrollIndicator={false}>
+      <ScreenScrollView showsVerticalScrollIndicator={false}>
         <View style={[styles.mapWrapper, { height: mapHeight }]}>
           <MapPreview 
             latitude={latitude} 
@@ -116,7 +116,7 @@ export default function LocationScreen() {
           <Text style={styles.shareText}>Compartir ubicación vía WhatsApp</Text>
         </TouchableOpacity>
 
-      </ScrollView>
+      </ScreenScrollView>
 
       {/* MODAL DE NUEVA ZONA */}
       <Modal visible={modalVisible} animationType="fade" transparent={true}>

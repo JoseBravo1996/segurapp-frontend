@@ -4,17 +4,17 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AppLayout from '../components/AppLayout';
+import ScreenScrollView from '../components/ScreenScrollView';
 import AppInput from '../components/AppInput';
 import PrimaryButton from '../components/PrimaryButton';
 import { useAuth } from '../context/AuthContext';
 import { showAppAlert } from '../utils/showAppAlert';
 import * as segurappApi from '../services/segurappApi';
 import { ApiError } from '../services/apiClient';
-import { useResponsive, getScrollContentStyle } from '../utils/responsive';
+import { useResponsive } from '../utils/responsive';
 
 export default function SettingsScreen() {
   const responsive = useResponsive();
-  const scrollContent = getScrollContentStyle(responsive);
   const socialColWidth = responsive.isDesktop ? '15.5%' : responsive.isTablet ? '23%' : '31%';
   const [activeTab, setActiveTab] = useState('profile');
   const [selectedLang, setSelectedLang] = useState('Español');
@@ -224,7 +224,7 @@ export default function SettingsScreen() {
 
   return (
     <AppLayout currentScreen="Settings">
-      <ScrollView contentContainerStyle={scrollContent} showsVerticalScrollIndicator={false}>
+      <ScreenScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.headerRow}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={22} color="#050A18" />
@@ -262,7 +262,7 @@ export default function SettingsScreen() {
             {activeTab === 'social' && <SocialView />}
         </View>
 
-      </ScrollView>
+      </ScreenScrollView>
     </AppLayout>
   );
 }

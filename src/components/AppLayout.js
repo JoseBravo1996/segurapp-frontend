@@ -17,16 +17,16 @@ export default function AppLayout({
 
   if (isDesktop && showNav) {
     return (
-      <View style={{ flex: 1, flexDirection: 'row', backgroundColor: '#050A18' }}>
+      <View style={styles.rootRow}>
         <MainTabNavigator variant="sidebar" currentScreen={currentScreen} />
-        <View style={{ flex: 1, backgroundColor, minWidth: 0 }}>
-          <SafeAreaView style={{ flex: 1, backgroundColor }}>
+        <View style={[styles.mainColumn, { backgroundColor }]}>
+          <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
             {Platform.OS === 'android' && (
               <StatusBar barStyle="dark-content" backgroundColor={backgroundColor} />
             )}
             {showHeader && <CustomHeader />}
             {showLocation && <LocationStatus />}
-            <View style={{ flex: 1 }}>{children}</View>
+            <View style={styles.scrollHost}>{children}</View>
           </SafeAreaView>
         </View>
       </View>
@@ -34,14 +34,37 @@ export default function AppLayout({
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor }}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
       {Platform.OS === 'android' && (
         <StatusBar barStyle={backgroundColor === '#050A18' ? 'light-content' : 'dark-content'} />
       )}
       {showHeader && <CustomHeader />}
       {showLocation && <LocationStatus />}
-      {children}
+      <View style={styles.scrollHost}>{children}</View>
       {showNav && <MainTabNavigator variant="bottom" currentScreen={currentScreen} />}
     </SafeAreaView>
   );
 }
+
+const styles = {
+  rootRow: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#050A18',
+    minHeight: Platform.OS === 'web' ? '100vh' : undefined,
+  },
+  mainColumn: {
+    flex: 1,
+    minWidth: 0,
+    minHeight: Platform.OS === 'web' ? '100vh' : undefined,
+  },
+  safeArea: {
+    flex: 1,
+    minHeight: Platform.OS === 'web' ? '100vh' : undefined,
+  },
+  scrollHost: {
+    flex: 1,
+    minHeight: 0,
+    overflow: Platform.OS === 'web' ? 'hidden' : undefined,
+  },
+};
