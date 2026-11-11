@@ -1,42 +1,28 @@
+/**
+ * AlertMapPanel.web.js
+ * Panel interactivo para visualizar la ubicación detallada de una alerta en Web.
+ */
 import React from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, Linking } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import MapPreview from './MapPreview';
 
-export default function AlertMapPanel({ coords, style }) {
-  const openMaps = () => {
-    Linking.openURL(
-      `https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}`
-    );
-  };
+export default function AlertMapPanel({ coords, style, title = 'Ubicación de la alerta' }) {
+  const latitude = coords?.latitude ?? 0;
+  const longitude = coords?.longitude ?? 0;
 
   return (
     <View style={[styles.panel, style]}>
-      <Text style={styles.label}>Ubicación del evento</Text>
-      <Text style={styles.coords}>
-        {coords.latitude.toFixed(5)}, {coords.longitude.toFixed(5)}
-      </Text>
-      <TouchableOpacity style={styles.button} onPress={openMaps}>
-        <Text style={styles.buttonText}>Ver en Google Maps</Text>
-      </TouchableOpacity>
+      <MapPreview latitude={latitude} longitude={longitude} title={title} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   panel: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    height: 280,
+    width: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
     backgroundColor: '#F1F5F9',
-    borderRadius: 15,
-    padding: 20,
   },
-  label: { fontWeight: '700', color: '#050A18', marginBottom: 8 },
-  coords: { color: '#64748B', marginBottom: 16 },
-  button: {
-    backgroundColor: '#FF5E00',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-  },
-  buttonText: { color: '#FFFFFF', fontWeight: '800' },
 });

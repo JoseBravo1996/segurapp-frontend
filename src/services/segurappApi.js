@@ -60,10 +60,12 @@ export function deleteKeyword(id) {
   return apiRequest(`/api/keywords/${id}`, { method: 'DELETE' });
 }
 
-export function triggerAlert({ word, userLat, userLng }) {
+export function triggerAlert({ word, userLat, userLng, isSilent = false, clientAlertId = null }) {
+  const body = { word, userLat, userLng, isSilent };
+  if (clientAlertId) body.clientAlertId = clientAlertId;
   return apiRequest('/api/alerts', {
     method: 'POST',
-    body: { word, userLat, userLng },
+    body,
   });
 }
 
@@ -110,5 +112,37 @@ export function resetPassword({ email, resetToken, newPassword }) {
     method: 'POST',
     body: { email, resetToken, newPassword },
     auth: false,
+  });
+}
+
+// ==========================================
+// ZONAS SEGURAS (SAFE ZONES)
+// ==========================================
+
+export function getSafeZones() {
+  return apiRequest('/api/safezones');
+}
+
+export function getSafeZoneById(id) {
+  return apiRequest(`/api/safezones/${id}`);
+}
+
+export function createSafeZone(payload) {
+  return apiRequest('/api/safezones', {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export function updateSafeZone(id, payload) {
+  return apiRequest(`/api/safezones/${id}`, {
+    method: 'PUT',
+    body: payload,
+  });
+}
+
+export function deleteSafeZone(id) {
+  return apiRequest(`/api/safezones/${id}`, {
+    method: 'DELETE',
   });
 }

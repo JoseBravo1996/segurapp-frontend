@@ -18,6 +18,8 @@ import * as segurappApi from '../services/segurappApi';
 import { ApiError } from '../services/apiClient';
 import { showAppAlert } from '../utils/showAppAlert';
 import { useResponsive, getModalWidth } from '../utils/responsive';
+import colors from '../theme/colors';
+import GuidedHighlight from '../components/GuidedHighlight';
 
 function splitName(fullName) {
   const parts = fullName.trim().split(/\s+/);
@@ -143,19 +145,21 @@ export default function ContactsScreen() {
   return (
     <AppLayout currentScreen="Contactos">
       <ScreenScrollView showsVerticalScrollIndicator={false}>
-        <View style={[styles.titleRow, responsive.isSmallPhone && styles.titleRowStack]}>
-          <View>
-            <Text style={styles.mainTitle}>Contactos de Red</Text>
-            <Text style={styles.mainSubtitle}>{contacts.length} personas vinculadas</Text>
+        <GuidedHighlight targetId="contacts_section" tooltipPosition="bottom">
+          <View style={[styles.titleRow, responsive.isSmallPhone && styles.titleRowStack]}>
+            <View>
+              <Text style={styles.mainTitle}>Contactos de Emergencia</Text>
+              <Text style={styles.mainSubtitle}>{contacts.length} personas recibirán tus alertas</Text>
+            </View>
+            <TouchableOpacity style={styles.addButton} onPress={handleAddNew} activeOpacity={0.8}>
+              <Ionicons name="person-add" size={18} color="#FFFFFF" />
+              <Text style={styles.addButtonText}>Agregar Contacto</Text>
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.addButton} onPress={handleAddNew}>
-            <Ionicons name="person-add" size={18} color="white" />
-            <Text style={styles.addButtonText}>Nuevo</Text>
-          </TouchableOpacity>
-        </View>
+        </GuidedHighlight>
 
         {loading ? (
-          <ActivityIndicator size="large" color="#FF5E00" style={{ marginTop: 40 }} />
+          <ActivityIndicator size="large" color={colors.brand.dark} style={{ marginTop: 40 }} />
         ) : contacts.length > 0 ? (
           contacts.map((item) => (
             <View key={item.id} style={styles.contactCard}>
@@ -170,38 +174,38 @@ export default function ContactsScreen() {
                   {item.nombre} {item.apellido}
                 </Text>
                 <View style={styles.detailRow}>
-                  <Ionicons name="call-outline" size={12} color="#64748B" />
+                  <Ionicons name="call" size={12} color={colors.neutral.textMuted} />
                   <Text style={styles.contactDetail}>{item.telefono}</Text>
                 </View>
               </View>
               <View style={styles.cardActions}>
                 <TouchableOpacity onPress={() => handleEdit(item)} style={styles.iconAction}>
-                  <Ionicons name="create-outline" size={20} color="#64748B" />
+                  <Ionicons name="pencil" size={18} color={colors.brand.dark} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDelete(item)} style={styles.iconAction}>
-                  <Ionicons name="trash-outline" size={20} color="#D00000" />
+                  <Ionicons name="trash-outline" size={18} color={colors.emergency.primary} />
                 </TouchableOpacity>
               </View>
             </View>
           ))
         ) : (
           <View style={styles.emptyCard}>
-            <Ionicons name="people-outline" size={50} color="#CBD5E1" />
-            <Text style={styles.emptyTitle}>Sin contactos</Text>
+            <Ionicons name="people-outline" size={48} color={colors.neutral.textLight} />
+            <Text style={styles.emptyTitle}>Sin contactos configurados</Text>
             <Text style={styles.emptySubtitle}>
-              Agregá personas de confianza para enviarles alertas automáticas.
+              Agregá personas de tu confianza para que reciban tu ubicación GPS automáticamente en caso de emergencia.
             </Text>
           </View>
         )}
       </ScreenScrollView>
 
-      <Modal visible={modalVisible} animationType="fade" transparent>
+      <Modal visible={modalVisible} animationType="fade" transparent onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContainer, { width: modalWidth }]}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{editingId ? 'Editar contacto' : 'Registrar contacto'}</Text>
+              <Text style={styles.modalTitle}>{editingId ? 'Editar Contacto' : 'Registrar Contacto'}</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeBtn}>
-                <Ionicons name="close" size={24} color="#050A18" />
+                <Ionicons name="close" size={24} color={colors.brand.dark} />
               </TouchableOpacity>
             </View>
 
@@ -223,7 +227,7 @@ export default function ContactsScreen() {
               <AppInput
                 label="Teléfono"
                 iconName="call-outline"
-                placeholder="+54 11 0000-0000"
+                placeholder="+54 9 11 0000-0000"
                 value={telefono}
                 onChangeText={setTelefono}
                 keyboardType="phone-pad"
@@ -250,80 +254,75 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 25,
+    marginBottom: 20,
     gap: 12,
   },
   titleRowStack: {
     flexDirection: 'column',
     alignItems: 'flex-start',
   },
-  mainTitle: { fontSize: 22, fontWeight: '800', color: '#050A18' },
-  mainSubtitle: { fontSize: 14, color: '#64748B', fontWeight: '500' },
+  mainTitle: { fontSize: 22, fontWeight: '900', color: colors.brand.dark },
+  mainSubtitle: { fontSize: 13, color: colors.neutral.textMuted, marginTop: 2 },
   addButton: {
-    backgroundColor: '#FF5E00',
+    backgroundColor: colors.brand.dark,
     flexDirection: 'row',
     paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
     borderRadius: 12,
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#FF5E00',
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+    elevation: 3,
   },
-  addButtonText: { color: 'white', fontWeight: 'bold', marginLeft: 8, fontSize: 14 },
+  addButtonText: { color: '#FFFFFF', fontWeight: '700', marginLeft: 8, fontSize: 13 },
   emptyCard: {
-    backgroundColor: '#F8FAFC',
-    padding: 50,
-    borderRadius: 25,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    marginTop: 20,
-  },
-  emptyTitle: { fontWeight: '800', fontSize: 16, color: '#050A18', marginTop: 15, marginBottom: 8 },
-  emptySubtitle: { color: '#64748B', textAlign: 'center', fontSize: 14, lineHeight: 20 },
-  contactCard: {
-    backgroundColor: 'white',
-    flexDirection: 'row',
-    padding: 16,
+    backgroundColor: colors.neutral.white,
+    padding: 36,
     borderRadius: 20,
     alignItems: 'center',
-    marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    borderColor: colors.neutral.border,
+    marginTop: 20,
+  },
+  emptyTitle: { fontWeight: '800', fontSize: 16, color: colors.brand.dark, marginTop: 12, marginBottom: 6 },
+  emptySubtitle: { color: colors.neutral.textMuted, textAlign: 'center', fontSize: 13, lineHeight: 20, maxWidth: 320 },
+  contactCard: {
+    backgroundColor: colors.neutral.white,
+    flexDirection: 'row',
+    padding: 16,
+    borderRadius: 18,
+    alignItems: 'center',
+    marginBottom: 10,
+    borderWidth: 1.5,
+    borderColor: colors.neutral.border,
+    elevation: 1,
   },
   avatar: {
-    width: 55,
-    height: 55,
-    borderRadius: 15,
-    backgroundColor: 'rgba(255, 94, 0, 0.1)',
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: colors.brand.accentLight,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 15,
+    marginRight: 14,
   },
-  avatarText: { color: '#FF5E00', fontWeight: '800', fontSize: 18 },
-  contactName: { fontWeight: '700', fontSize: 17, color: '#050A18', marginBottom: 4 },
-  detailRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
-  contactDetail: { fontSize: 13, color: '#64748B', marginLeft: 6 },
-  cardActions: { flexDirection: 'row', alignItems: 'center' },
-  iconAction: { padding: 8, marginLeft: 4 },
+  avatarText: { color: colors.brand.accent, fontWeight: '800', fontSize: 16 },
+  contactName: { fontWeight: '800', fontSize: 15, color: colors.brand.dark },
+  detailRow: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  contactDetail: { fontSize: 13, color: colors.neutral.textMuted, marginLeft: 6 },
+  cardActions: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  iconAction: { padding: 8, borderRadius: 8, backgroundColor: colors.neutral.background },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(5, 10, 24, 0.8)',
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 16,
   },
   modalContainer: {
-    backgroundColor: 'white',
-    borderRadius: 30,
-    padding: 25,
+    backgroundColor: colors.neutral.white,
+    borderRadius: 24,
+    padding: 24,
     maxHeight: '85%',
-    elevation: 20,
+    elevation: 10,
   },
   modalHeader: {
     flexDirection: 'row',
@@ -331,24 +330,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: '#050A18' },
-  closeBtn: { padding: 5 },
+  modalTitle: { fontSize: 18, fontWeight: '900', color: colors.brand.dark },
+  closeBtn: { padding: 4 },
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 25,
+    marginTop: 20,
     gap: 10,
   },
-  btnCancel: { padding: 15, flex: 1, alignItems: 'center', justifyContent: 'center' },
-  btnCancelText: { color: '#64748B', fontWeight: '600', fontSize: 15 },
-  btnSave: {
-    backgroundColor: '#050A18',
-    padding: 15,
-    flex: 1.5,
-    borderRadius: 15,
+  btnCancel: {
+    padding: 14,
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 5,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.neutral.borderStrong,
   },
-  btnSaveText: { color: 'white', fontWeight: '800', fontSize: 15 },
+  btnCancelText: { color: colors.neutral.textMuted, fontWeight: '700', fontSize: 14 },
+  btnSave: {
+    backgroundColor: colors.brand.dark,
+    padding: 14,
+    flex: 1.5,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnSaveText: { color: '#FFFFFF', fontWeight: '800', fontSize: 14 },
 });

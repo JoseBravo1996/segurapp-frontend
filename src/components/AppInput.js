@@ -1,22 +1,41 @@
 import React from 'react';
 import { StyleSheet, Text, View, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import colors from '../theme/colors';
 
-export default function AppInput({ label, iconName, placeholder, value, onChangeText, ...props }) {
+export default function AppInput({
+  label,
+  iconName,
+  placeholder,
+  value,
+  onChangeText,
+  lightLabel = false,
+  ...props
+}) {
   return (
     <View style={styles.container}>
-      {/* 1. Etiqueta (Usuario/Contraseña) ahora en Blanco */}
-      <Text style={styles.label}>{label}</Text>
-      
+      {label && (
+        <Text style={[styles.label, lightLabel ? styles.labelLight : styles.labelDark]}>
+          {label}
+        </Text>
+      )}
+
       <View style={styles.inputContainer}>
-        <Ionicons name={iconName} size={20} color="#FF5E00" style={styles.inputIcon} />
-        <TextInput 
-          style={styles.input} 
+        {iconName && (
+          <Ionicons
+            name={iconName}
+            size={18}
+            color={colors.neutral.textMuted}
+            style={styles.inputIcon}
+          />
+        )}
+        <TextInput
+          style={styles.input}
           placeholder={placeholder}
-          placeholderTextColor="#BBB" 
+          placeholderTextColor={colors.neutral.textLight}
           value={value}
           onChangeText={onChangeText}
-          {...props} 
+          {...props}
         />
       </View>
     </View>
@@ -24,31 +43,37 @@ export default function AppInput({ label, iconName, placeholder, value, onChange
 }
 
 const styles = StyleSheet.create({
-  container: { width: '100%', marginBottom: 15 },
-  
-  // CAMBIADO A BLANCO
-  label: { 
-    fontSize: 14, 
-    fontWeight: 'bold', 
-    marginBottom: 5, 
-    color: '#FFFFFF' 
+  container: {
+    width: '100%',
+    marginBottom: 14,
   },
-  
-  // MANTENEMOS EL ESTILO ORIGINAL (Fondo claro)
+  label: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 6,
+  },
+  labelDark: {
+    color: colors.brand.dark,
+  },
+  labelLight: {
+    color: '#FFFFFF',
+  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F0F4F8',
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    backgroundColor: colors.neutral.background,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    borderWidth: 1.5,
+    borderColor: colors.neutral.border,
   },
-  
-  inputIcon: { marginRight: 10 },
-  
-  // CAMBIADO A BLANCO (Lo que el usuario escribe)
-  input: { 
-    flex: 1, 
-    height: 45, 
-    color: '#0e0e0e' // Ahora el texto ingresado será blanco
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: colors.brand.dark,
   },
 });

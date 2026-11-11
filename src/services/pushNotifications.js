@@ -45,6 +45,10 @@ function handleNotificationResponse(response) {
 }
 
 export function setupPushNotificationListeners() {
+  if (Platform.OS === 'web') {
+    return () => {};
+  }
+
   const receivedSub = Notifications.addNotificationReceivedListener((notification) => {
     console.log('[Push] Notificación recibida:', notification.request.content.title);
   });
