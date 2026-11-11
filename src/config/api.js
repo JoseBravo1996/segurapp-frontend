@@ -15,6 +15,13 @@ export function getApiBaseUrl() {
     return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, '');
   }
 
+  if (Platform.OS === 'web') {
+    if (typeof window !== 'undefined' && window.location && window.location.hostname) {
+      return `http://${window.location.hostname}:5093`;
+    }
+    return 'http://localhost:5093';
+  }
+
   const devHost = resolveDevHost();
   if (devHost) {
     return `http://${devHost}:5093`;

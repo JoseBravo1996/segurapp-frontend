@@ -16,6 +16,7 @@ import { useAuth, ApiError } from '../context/AuthContext';
 import { showAppAlert } from '../utils/showAppAlert';
 import * as segurappApi from '../services/segurappApi';
 import { useResponsive, getCardWidth } from '../utils/responsive';
+import colors from '../theme/colors';
 
 export default function LoginScreen({ navigation }) {
   const responsive = useResponsive();
@@ -154,7 +155,7 @@ export default function LoginScreen({ navigation }) {
       <SafeAreaView style={styles.container}>
         <View style={[styles.card, { width: cardWidth, padding: cardPadding }]}>
           <View style={styles.successIconCircle}>
-            <Ionicons name={icons[currentView]} size={responsive.isSmallPhone ? 80 : 100} color="#FF5E00" />
+            <Ionicons name={icons[currentView]} size={responsive.isSmallPhone ? 80 : 100} color={colors.emergency.primary} />
           </View>
 
           <Text style={[styles.title, { fontSize: titleSize }]}>{titles[currentView]}</Text>
@@ -177,7 +178,7 @@ export default function LoginScreen({ navigation }) {
       <SafeAreaView style={styles.container}>
         <View style={[styles.card, { width: cardWidth, padding: cardPadding }]}>
           <TouchableOpacity onPress={() => setCurrentView('login')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={28} color="#FF5E00" />
+            <Ionicons name="arrow-back" size={28} color={colors.emergency.primary} />
           </TouchableOpacity>
 
           <Text style={[styles.title, { fontSize: titleSize }]}>Nueva contraseña</Text>
@@ -185,6 +186,7 @@ export default function LoginScreen({ navigation }) {
 
           <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
             <AppInput
+              lightLabel
               label="Email"
               iconName="mail-outline"
               placeholder="usuario@mail.com"
@@ -194,6 +196,7 @@ export default function LoginScreen({ navigation }) {
               onChangeText={setEmail}
             />
             <AppInput
+              lightLabel
               label="Código de recuperación"
               iconName="key-outline"
               placeholder="Pegá el código aquí"
@@ -202,6 +205,7 @@ export default function LoginScreen({ navigation }) {
               onChangeText={setResetToken}
             />
             <AppInput
+              lightLabel
               label="Nueva contraseña"
               iconName="lock-closed-outline"
               placeholder="Mínimo 6 caracteres"
@@ -215,7 +219,7 @@ export default function LoginScreen({ navigation }) {
               onPress={handleResetPassword}
               style={{ marginTop: 20 }}
             />
-            {loading && <ActivityIndicator color="#FF5E00" style={{ marginTop: 16 }} />}
+            {loading && <ActivityIndicator color={colors.emergency.primary} style={{ marginTop: 16 }} />}
           </ScrollView>
         </View>
       </SafeAreaView>
@@ -227,7 +231,7 @@ export default function LoginScreen({ navigation }) {
       <SafeAreaView style={styles.container}>
         <View style={[styles.card, { width: cardWidth, padding: cardPadding }]}>
           <TouchableOpacity onPress={() => setCurrentView('login')} style={styles.backButton}>
-            <Ionicons name="arrow-back" size={28} color="#FF5E00" />
+            <Ionicons name="arrow-back" size={28} color={colors.emergency.primary} />
           </TouchableOpacity>
 
           <Text style={[styles.title, { fontSize: titleSize }]}>
@@ -242,6 +246,7 @@ export default function LoginScreen({ navigation }) {
           <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
             {currentView === 'register' && (
               <AppInput
+                lightLabel
                 label="Nombre Completo"
                 iconName="person-outline"
                 placeholder="Nombre y Apellido"
@@ -250,6 +255,7 @@ export default function LoginScreen({ navigation }) {
               />
             )}
             <AppInput
+              lightLabel
               label="Email"
               iconName="mail-outline"
               placeholder="usuario@mail.com"
@@ -260,6 +266,7 @@ export default function LoginScreen({ navigation }) {
             />
             {currentView === 'register' && (
               <AppInput
+                lightLabel
                 label="Teléfono"
                 iconName="call-outline"
                 placeholder="+5491100000000"
@@ -270,6 +277,7 @@ export default function LoginScreen({ navigation }) {
             )}
             {currentView === 'register' && (
               <AppInput
+                lightLabel
                 label="Contraseña"
                 iconName="lock-closed-outline"
                 placeholder="********"
@@ -296,7 +304,7 @@ export default function LoginScreen({ navigation }) {
               }}
               style={{ marginTop: 20 }}
             />
-            {loading && <ActivityIndicator color="#FF5E00" style={{ marginTop: 16 }} />}
+            {loading && <ActivityIndicator color={colors.emergency.primary} style={{ marginTop: 16 }} />}
           </ScrollView>
         </View>
       </SafeAreaView>
@@ -314,13 +322,14 @@ export default function LoginScreen({ navigation }) {
             <View style={[styles.pulseRing, responsive.isSmallPhone && styles.pulseRingSmall]} />
           </View>
           <Text style={[styles.title, { fontSize: titleSize }]}>
-            Segur<Text style={{ color: '#FF5E00' }}>APP</Text>
+            Segur<Text style={{ color: colors.emergency.primary }}>APP</Text>
           </Text>
           <Text style={styles.subtitle}>Sistemas de Protección Inteligente</Text>
         </View>
 
         <View style={styles.form}>
           <AppInput
+            lightLabel
             label="Email"
             iconName="mail-outline"
             placeholder="usuario@mail.com"
@@ -331,6 +340,7 @@ export default function LoginScreen({ navigation }) {
           />
 
           <AppInput
+            lightLabel
             label="Contraseña"
             iconName="lock-closed-outline"
             placeholder="••••••••"
@@ -350,7 +360,7 @@ export default function LoginScreen({ navigation }) {
             title={loading ? 'Ingresando...' : 'Inicia sesión'}
             onPress={handleLogin}
           />
-          {loading && <ActivityIndicator color="#FF5E00" style={{ marginTop: 16 }} />}
+          {loading && <ActivityIndicator color={colors.emergency.primary} style={{ marginTop: 16 }} />}
 
           <TouchableOpacity onPress={() => setCurrentView('register')} style={styles.registerBtn}>
             <Text style={styles.registerText}>
@@ -369,100 +379,101 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#050A18',
+    backgroundColor: colors.brand.dark,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 16,
   },
   card: {
-    backgroundColor: '#0A1128',
-    borderRadius: 35,
+    backgroundColor: colors.brand.surface,
+    borderRadius: 28,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 94, 0, 0.2)',
-    shadowColor: '#2e3db3',
+    borderWidth: 1.5,
+    borderColor: colors.brand.border,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 15 },
-    shadowOpacity: 0.6,
+    shadowOpacity: 0.4,
     shadowRadius: 20,
     elevation: 15,
     maxHeight: '92%',
     maxWidth: 480,
   },
-  header: { alignItems: 'center', marginBottom: 30 },
+  header: { alignItems: 'center', marginBottom: 25 },
   iconCircle: {
-    backgroundColor: '#FF5E00',
-    width: 90,
-    height: 90,
-    borderRadius: 45,
+    backgroundColor: colors.emergency.primary,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
     zIndex: 2,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 255, 255, 0.4)',
   },
   iconCircleSmall: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    marginBottom: 16,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    marginBottom: 14,
   },
   pulseRing: {
     position: 'absolute',
-    width: 110,
-    height: 110,
-    borderRadius: 55,
+    width: 104,
+    height: 104,
+    borderRadius: 52,
     borderWidth: 2,
-    borderColor: 'rgba(255, 94, 0, 0.3)',
+    borderColor: 'rgba(220, 38, 38, 0.35)',
   },
   pulseRingSmall: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: 84,
+    height: 84,
+    borderRadius: 42,
   },
-  title: { fontWeight: '800', color: '#FFFFFF', textAlign: 'center', letterSpacing: -1 },
+  title: { fontWeight: '900', color: '#FFFFFF', textAlign: 'center', letterSpacing: -0.5 },
   subtitle: {
-    fontSize: 14,
-    color: '#64748B',
+    fontSize: 13,
+    color: '#94A3B8',
     marginBottom: 10,
     textAlign: 'center',
-    fontWeight: '400',
-    letterSpacing: 0.5,
+    fontWeight: '500',
+    letterSpacing: 0.3,
   },
   form: { width: '100%' },
   forgotText: {
     textAlign: 'right',
-    color: '#FF5E00',
+    color: '#F87171',
     fontSize: 13,
     fontWeight: '700',
-    marginBottom: 25,
-    opacity: 0.9,
+    marginBottom: 20,
   },
-  registerBtn: { marginTop: 20 },
-  registerText: { textAlign: 'center', fontSize: 14, color: '#CBD5E1' },
-  linkText: { color: '#FF5E00', fontWeight: '800' },
-  divider: { width: '40%', height: 1, backgroundColor: 'rgba(255,255,255,0.1)', marginVertical: 25 },
+  registerBtn: { marginTop: 18 },
+  registerText: { textAlign: 'center', fontSize: 13, color: '#94A3B8' },
+  linkText: { color: colors.emergency.primary, fontWeight: '800' },
+  divider: { width: '40%', height: 1, backgroundColor: colors.brand.border, marginVertical: 20 },
   footerText: {
     fontSize: 10,
-    color: '#475569',
+    color: '#64748B',
     textAlign: 'center',
     lineHeight: 16,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
-  backButton: { alignSelf: 'flex-start', marginBottom: 20, padding: 5 },
+  backButton: { alignSelf: 'flex-start', marginBottom: 16, padding: 5 },
   successIconCircle: {
     marginBottom: 20,
-    shadowColor: '#FF5E00',
+    shadowColor: colors.emergency.primary,
     shadowOpacity: 0.5,
     shadowRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
   },
   successSubtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#94A3B8',
     textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 35,
+    lineHeight: 22,
+    marginBottom: 30,
     fontWeight: '500',
   },
 });

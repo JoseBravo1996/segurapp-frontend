@@ -24,6 +24,8 @@ export default function VoiceListenerProvider() {
   useEffect(() => {
     if (!VoiceService.isSupported()) return undefined;
 
+    VoiceService.checkAndRestoreListening();
+
     const unsubscribe = VoiceService.subscribe(async (word) => {
       if (isHandling.current) return;
       isHandling.current = true;

@@ -13,14 +13,21 @@ import LocationScreen from './src/screens/LocationScreen';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { WordsProvider } from './src/context/WordsContext';
+import { GuidedOnboardingProvider } from './src/context/GuidedOnboardingContext';
+import GuidedTopBanner from './src/components/GuidedTopBanner';
 import VoiceListenerProvider from './src/providers/VoiceListenerProvider';
 import PushNotificationProvider from './src/providers/PushNotificationProvider';
 import { navigationRef } from './src/navigation/navigationRef';
+import useOfflineSync from './src/hooks/useOfflineSync';
+import colors from './src/theme/colors';
+import { setupWebBranding } from './src/utils/webBranding';
 
 const Stack = createStackNavigator();
 
 function ensureWebViewportHeight() {
   if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+
+  setupWebBranding();
 
   const styleId = 'segurapp-web-layout';
   const css = `
@@ -90,41 +97,51 @@ function ensureWebViewportHeight() {
 function AppNavigator() {
   useEffect(() => {
     ensureWebViewportHeight();
+    setupWebBranding();
   }, []);
+  useOfflineSync(); // Detecta reconexiones y sincroniza alertas offline
   const { isReady, isAuthenticated } = useAuth();
 
   if (!isReady) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#050A18' }}>
-        <ActivityIndicator size="large" color="#FF5E00" />
+        <ActivityIndicator size="large" color={colors.emergency.primary} />
       </View>
     );
   }
 
   return (
     <View style={styles.appRoot}>
-      <WordsProvider>
-        <NavigationContainer ref={navigationRef}>
-          <PushNotificationProvider />
-          <VoiceListenerProvider />
-          <Stack.Navigator
-            initialRouteName={isAuthenticated ? 'Emergencia' : 'Login'}
-            screenOptions={{
-              headerShown: false,
-              animationEnabled: false,
-              cardStyle: { flex: 1 },
+      <GuidedOnboardingProvider>
+        <WordsProvider>
+          <NavigationContainer
+            ref={navigationRef}
+            documentTitle={{
+              formatter: () => 'SegurAPP',
             }}
           >
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Emergencia" component={HomeScreen} />
-          <Stack.Screen name="Palabras" component={WordsScreen} />
-          <Stack.Screen name="Contactos" component={ContactsScreen} />
-          <Stack.Screen name="Historial" component={HistoryScreen} />
-          <Stack.Screen name="Ubicación" component={LocationScreen} />
-          <Stack.Screen name="Settings" component={SettingsScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </WordsProvider>
+            <PushNotificationProvider />
+            <VoiceListenerProvider />
+            <GuidedTopBanner />
+            <Stack.Navigator
+              initialRouteName={isAuthenticated ? 'Emergencia' : 'Login'}
+              screenOptions={{
+                headerShown: false,
+                animationEnabled: false,
+                cardStyle: { flex: 1 },
+              }}
+            >
+              <Stack.Screen name="Login" component={LoginScreen} />
+              <Stack.Screen name="Emergencia" component={HomeScreen} />
+              <Stack.Screen name="Palabras" component={WordsScreen} />
+              <Stack.Screen name="Contactos" component={ContactsScreen} />
+              <Stack.Screen name="Historial" component={HistoryScreen} />
+              <Stack.Screen name="Ubicación" component={LocationScreen} />
+              <Stack.Screen name="Settings" component={SettingsScreen} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </WordsProvider>
+      </GuidedOnboardingProvider>
     </View>
   );
 }

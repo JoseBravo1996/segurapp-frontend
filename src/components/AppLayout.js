@@ -25,7 +25,7 @@ export default function AppLayout({
             {Platform.OS === 'android' && (
               <StatusBar barStyle="dark-content" backgroundColor={backgroundColor} />
             )}
-            {showHeader && <CustomHeader />}
+            {/* En web desktop con sidebar, la barra superior horizontal se oculta para maximizar espacio */}
             {showLocation && <LocationStatus />}
             <View style={styles.scrollHost}>{children}</View>
           </SafeAreaView>

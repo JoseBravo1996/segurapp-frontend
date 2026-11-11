@@ -6,77 +6,135 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Switch,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import colors from '../theme/colors';
 import { useResponsive, getModalWidth } from '../utils/responsive';
 
 export default function PanicConfirmModal({
   visible,
-  words,
+  words = [],
   onCancel,
   onConfirm,
   loading,
+  defaultSilent = false,
 }) {
   const responsive = useResponsive();
   const modalWidth = getModalWidth(responsive, 0.94);
   const [selectedWord, setSelectedWord] = useState(null);
+  const [isSilent, setIsSilent] = useState(defaultSilent);
 
   React.useEffect(() => {
     if (visible && words.length > 0) {
       setSelectedWord(words[0].word);
+      setIsSilent(defaultSilent);
     }
-  }, [visible, words]);
+  }, [visible, words, defaultSilent]);
 
   const selected = words.find((w) => w.word === selectedWord);
 
   return (
-    <Modal visible={visible} animationType="fade" transparent>
+    <Modal visible={visible} animationType="fade" transparent onRequestClose={onCancel}>
       <View style={styles.overlay}>
         <View style={[styles.box, { width: modalWidth, maxWidth: 460 }]}>
+          {/* Header */}
           <View style={styles.header}>
-            <Ionicons name="warning" size={28} color="#FF5E00" />
-            <Text style={styles.title}>Confirmar alerta de pánico</Text>
-          </View>
-
-          <Text style={styles.subtitle}>
-            Se notificará al contacto asociado y se registrará tu ubicación.
-          </Text>
-
-          <Text style={styles.label}>Palabra clave a usar</Text>
-          {words.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[styles.option, selectedWord === item.word && styles.optionActive]}
-              onPress={() => setSelectedWord(item.word)}
-            >
-              <Text style={[styles.optionWord, selectedWord === item.word && styles.optionWordActive]}>
-                {item.word}
+            <View style={[styles.iconWrapper, isSilent && styles.iconWrapperSilent]}>
+              <Ionicons
+                name={isSilent ? 'volume-mute' : 'alert-circle'}
+                size={28}
+                color={isSilent ? colors.neutral.textMuted : colors.emergency.primary}
+              />
+            </View>
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <Text style={styles.title}>
+                {isSilent ? 'Alerta Silenciosa Discreta' : 'Confirmar Alerta de Emergencia'}
               </Text>
-              <Text style={styles.optionContact}>→ {item.description}</Text>
-            </TouchableOpacity>
-          ))}
-
-          {selected && (
-            <View style={styles.summary}>
-              <Text style={styles.summaryText}>
-                Contacto: <Text style={{ fontWeight: '800' }}>{selected.description}</Text>
+              <Text style={styles.subtitle}>
+                Se registrará tu ubicación GPS y se notificará de inmediato a tus contactos.
               </Text>
             </View>
-          )}
+          </View>
 
-          <View style={styles.actions}>
-            <TouchableOpacity style={styles.btnCancel} onPress={onCancel} disabled={loading}>
-              <Text style={styles.btnCancelText}>Cancelar</Text>
-            </TouchableOpacity>
+          {/* Selector de palabra clave */}
+          <Text style={styles.sectionLabel}>Palabra clave asociada:</Text>
+          <View style={styles.wordsList}>
+            {words.map((item) => {
+              const active = selectedWord === item.word;
+              return (
+                <TouchableOpacity
+                  key={item.id}
+                  style={[styles.wordCard, active && styles.wordCardActive]}
+                  onPress={() => setSelectedWord(item.word)}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.wordRow}>
+                    <Text style={[styles.wordText, active && styles.wordTextActive]}>
+                      "{item.word}"
+                    </Text>
+                    {active && <Ionicons name="checkmark-circle" size={18} color={colors.emergency.primary} />}
+                  </View>
+                  <Text style={styles.contactText}>
+                    👤 Contacto: {item.description || item.contactName || 'No especificado'}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Control de Modo Silencioso */}
+          <View style={styles.silentContainer}>
+            <View style={styles.silentInfo}>
+              <Ionicons
+                name={isSilent ? 'volume-mute' : 'volume-high'}
+                size={22}
+                color={isSilent ? colors.neutral.textMuted : colors.emergency.primary}
+              />
+              <View style={{ marginLeft: 10, flex: 1 }}>
+                <Text style={styles.silentTitle}>Modo Silencioso (Discreto)</Text>
+                <Text style={styles.silentSubtitle}>
+                  {isSilent
+                    ? 'Sin alarmas sonoras ni vibración en este dispositivo.'
+                    : 'Emite señal sonora y háptica de alerta.'}
+                </Text>
+              </View>
+            </View>
+            <Switch
+              value={isSilent}
+              onValueChange={setIsSilent}
+              trackColor={{ false: colors.neutral.borderStrong, true: colors.brand.border }}
+              thumbColor={isSilent ? colors.brand.dark : colors.emergency.primary}
+            />
+          </View>
+
+          {/* Botones de acción */}
+          <View style={styles.actionsRow}>
             <TouchableOpacity
-              style={styles.btnConfirm}
-              onPress={() => selectedWord && onConfirm(selectedWord)}
+              style={styles.btnSecondary}
+              onPress={onCancel}
+              disabled={loading}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.btnSecondaryText}>Cancelar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.btnPrimary,
+                isSilent ? styles.btnPrimarySilent : styles.btnPrimaryEmergency,
+                (!selectedWord || loading) && styles.btnDisabled,
+              ]}
+              onPress={() => selectedWord && onConfirm(selectedWord, isSilent)}
               disabled={loading || !selectedWord}
+              activeOpacity={0.8}
             >
               {loading ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator color="#FFFFFF" size="small" />
               ) : (
-                <Text style={styles.btnConfirmText}>ENVIAR ALERTA</Text>
+                <Text style={styles.btnPrimaryText}>
+                  {isSilent ? 'Emitir en Silencio' : 'Enviar Alerta Ahora'}
+                </Text>
               )}
             </TouchableOpacity>
           </View>
@@ -89,56 +147,149 @@ export default function PanicConfirmModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(5, 10, 24, 0.85)',
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
   },
   box: {
-    backgroundColor: 'white',
+    backgroundColor: colors.neutral.white,
     borderRadius: 24,
     padding: 24,
-    maxWidth: 460,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
   },
-  header: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 10 },
-  title: { fontSize: 18, fontWeight: '800', color: '#050A18', flex: 1 },
-  subtitle: { fontSize: 14, color: '#64748B', marginBottom: 20, lineHeight: 20 },
-  label: { fontWeight: '700', color: '#333', marginBottom: 10 },
-  option: {
-    borderWidth: 2,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
-  },
-  optionActive: { borderColor: '#FF5E00', backgroundColor: 'rgba(255, 94, 0, 0.08)' },
-  optionWord: { fontSize: 16, fontWeight: '800', color: '#050A18' },
-  optionWordActive: { color: '#FF5E00' },
-  optionContact: { fontSize: 12, color: '#64748B', marginTop: 4 },
-  summary: {
-    backgroundColor: '#FFF7ED',
-    padding: 12,
-    borderRadius: 10,
-    marginTop: 4,
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 16,
   },
-  summaryText: { fontSize: 13, color: '#9A3412' },
-  actions: { flexDirection: 'row', gap: 10, marginTop: 8 },
-  btnCancel: {
-    flex: 1,
-    paddingVertical: 14,
+  iconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.emergency.light,
     alignItems: 'center',
-    borderRadius: 12,
+    justifyContent: 'center',
+  },
+  iconWrapperSilent: {
+    backgroundColor: colors.neutral.border,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: colors.neutral.textDark,
+  },
+  subtitle: {
+    fontSize: 12,
+    color: colors.neutral.textMuted,
+    marginTop: 2,
+  },
+  sectionLabel: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.brand.dark,
+    marginBottom: 8,
+  },
+  wordsList: {
+    gap: 8,
+    marginBottom: 16,
+  },
+  wordCard: {
+    backgroundColor: colors.neutral.background,
+    borderWidth: 1.5,
+    borderColor: colors.neutral.border,
+    borderRadius: 14,
+    padding: 12,
+  },
+  wordCardActive: {
+    borderColor: colors.emergency.primary,
+    backgroundColor: '#FEF2F2',
+  },
+  wordRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  wordText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.neutral.textDark,
+  },
+  wordTextActive: {
+    color: colors.emergency.primary,
+  },
+  contactText: {
+    fontSize: 12,
+    color: colors.neutral.textMuted,
+    marginTop: 4,
+  },
+  silentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.neutral.background,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: colors.neutral.border,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 20,
   },
-  btnCancelText: { color: '#64748B', fontWeight: '700' },
-  btnConfirm: {
-    flex: 1.5,
+  silentInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  silentTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: colors.neutral.textDark,
+  },
+  silentSubtitle: {
+    fontSize: 11,
+    color: colors.neutral.textMuted,
+    marginTop: 1,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  btnSecondary: {
+    flex: 1,
+    backgroundColor: colors.neutral.background,
+    borderWidth: 1,
+    borderColor: colors.neutral.borderStrong,
+    borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
-    borderRadius: 12,
-    backgroundColor: '#FF5E00',
   },
-  btnConfirmText: { color: 'white', fontWeight: '900', fontSize: 13 },
+  btnSecondaryText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.neutral.textMuted,
+  },
+  btnPrimary: {
+    flex: 2,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnPrimaryEmergency: {
+    backgroundColor: colors.emergency.primary,
+  },
+  btnPrimarySilent: {
+    backgroundColor: colors.brand.dark,
+  },
+  btnDisabled: {
+    opacity: 0.5,
+  },
+  btnPrimaryText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
 });

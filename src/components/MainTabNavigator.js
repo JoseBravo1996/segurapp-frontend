@@ -2,7 +2,9 @@ import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../context/AuthContext';
 import { useResponsive, SIDEBAR_WIDTH } from '../utils/responsive';
+import colors from '../theme/colors';
 
 const TABS = [
   { id: 'Emergencia', icon: 'shield-checkmark', iconOutline: 'shield-checkmark-outline', label: 'Emergencia' },
@@ -31,7 +33,7 @@ function TabButton({ tab, isActive, onPress, variant }) {
         <Ionicons
           name={isActive ? tab.icon : tab.iconOutline}
           size={isSidebar ? 22 : isSmallPhone ? 20 : 22}
-          color={isActive ? '#FF5E00' : '#64748B'}
+          color={isActive ? colors.neutral.white : '#94A3B8'}
         />
       </View>
       {(isSidebar || !isSmallPhone) && (
@@ -52,9 +54,15 @@ function TabButton({ tab, isActive, onPress, variant }) {
 
 export default function MainTabNavigator({ currentScreen, variant = 'bottom' }) {
   const navigation = useNavigation();
+  const { logout } = useAuth();
   const { bottomInset, isWeb } = useResponsive();
 
   const navigate = (id) => navigation.navigate(id);
+
+  const handleLogout = async () => {
+    await logout();
+    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+  };
 
   if (variant === 'sidebar') {
     return (
@@ -64,9 +72,9 @@ export default function MainTabNavigator({ currentScreen, variant = 'bottom' }) 
             <Ionicons name="shield-checkmark" size={26} color="white" />
           </View>
           <Text style={styles.brandTitle}>
-            Segur<Text style={{ color: '#FF5E00' }}>APP</Text>
+            Segur<Text style={{ color: colors.emergency.primary }}>APP</Text>
           </Text>
-          <Text style={styles.brandSubtitle}>Panel de control</Text>
+          <Text style={styles.brandSubtitle}>Centro de Operaciones</Text>
         </View>
 
         <View style={styles.sidebarNav}>
@@ -81,8 +89,36 @@ export default function MainTabNavigator({ currentScreen, variant = 'bottom' }) 
           ))}
         </View>
 
+        {/* ACCIONES DE CONFIGURACIÓN Y CERRAR SESIÓN (EN LA POSICIÓN MARCADA EN AZUL) */}
+        <View style={styles.sidebarActionsContainer}>
+          <TouchableOpacity
+            style={[
+              styles.sidebarActionBtn,
+              currentScreen === 'Settings' && styles.sidebarItemActive,
+            ]}
+            onPress={() => navigation.navigate('Settings')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.sidebarActionIconWrap}>
+              <Ionicons name="settings-outline" size={18} color="#94A3B8" />
+            </View>
+            <Text style={styles.sidebarActionText}>Configuración</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.sidebarActionBtn, styles.sidebarActionBtnLogout]}
+            onPress={handleLogout}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.sidebarActionIconWrap, styles.sidebarLogoutIconWrap]}>
+              <Ionicons name="log-out-outline" size={18} color="#F87171" />
+            </View>
+            <Text style={styles.sidebarLogoutText}>Cerrar Sesión</Text>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.sidebarFooter}>
-          <Text style={styles.footerNote}>Protección activa 24/7</Text>
+          <Text style={styles.footerNote}>SISTEMA ACTIVO 24/7</Text>
         </View>
       </View>
     );
@@ -113,16 +149,16 @@ export default function MainTabNavigator({ currentScreen, variant = 'bottom' }) 
 const styles = StyleSheet.create({
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#050A18',
+    backgroundColor: colors.brand.dark,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+    borderTopColor: colors.brand.border,
     justifyContent: 'space-around',
     alignItems: 'center',
     flexShrink: 0,
     paddingTop: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 20,
   },
@@ -130,111 +166,149 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flex: 1,
-    paddingVertical: 2,
+    paddingVertical: 4,
   },
   tabItemActive: {
-    backgroundColor: 'rgba(255, 94, 0, 0.08)',
     borderRadius: 12,
   },
   iconContainer: {
-    padding: 8,
-    borderRadius: 15,
+    padding: 6,
+    borderRadius: 12,
   },
   iconContainerActive: {
-    backgroundColor: 'rgba(255, 94, 0, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
   },
   tabLabel: {
     fontSize: 10,
-    color: '#64748B',
+    color: '#94A3B8',
     marginTop: 2,
-    fontWeight: '500',
-    textDecorationLine: 'none',
+    fontWeight: '600',
   },
   tabLabelActive: {
-    color: '#FF5E00',
+    color: colors.neutral.white,
     fontWeight: '800',
-    textDecorationLine: 'none',
   },
 
   sidebar: {
     width: SIDEBAR_WIDTH,
     alignSelf: 'stretch',
-    backgroundColor: '#050A18',
+    backgroundColor: colors.brand.dark,
     borderRightWidth: 1,
-    borderRightColor: 'rgba(255, 255, 255, 0.06)',
-    paddingTop: Platform.OS === 'web' ? 28 : 48,
-    paddingHorizontal: 16,
-    paddingBottom: 24,
-    justifyContent: 'flex-start',
+    borderRightColor: colors.brand.border,
+    paddingTop: Platform.OS === 'web' ? 16 : 40,
+    paddingHorizontal: 12,
+    paddingBottom: 14,
+    justifyContent: 'space-between',
   },
   sidebarBrand: {
     alignItems: 'center',
-    marginBottom: 36,
-    paddingBottom: 24,
+    marginBottom: 16,
+    paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    borderBottomColor: colors.brand.border,
   },
   brandIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 94, 0, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 94, 0, 0.4)',
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: 'rgba(220, 38, 38, 0.2)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(220, 38, 38, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 6,
   },
   brandTitle: {
-    fontSize: 22,
+    fontSize: 19,
     fontWeight: '900',
     color: '#FFFFFF',
     letterSpacing: 0.5,
   },
   brandSubtitle: {
-    fontSize: 11,
-    color: '#64748B',
-    marginTop: 4,
+    fontSize: 10,
+    color: '#94A3B8',
+    marginTop: 1,
     fontWeight: '600',
   },
   sidebarNav: {
     flex: 1,
-    gap: 6,
+    gap: 3,
   },
   sidebarItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    borderRadius: 14,
-    marginBottom: 4,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    marginBottom: 2,
   },
   sidebarItemActive: {
-    backgroundColor: 'rgba(255, 94, 0, 0.12)',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 94, 0, 0.25)',
+    borderColor: 'rgba(255, 255, 255, 0.2)',
   },
   sidebarLabel: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#94A3B8',
-    marginLeft: 12,
+    marginLeft: 10,
     fontWeight: '600',
     flex: 1,
   },
   sidebarLabelActive: {
-    color: '#FF5E00',
+    color: '#FFFFFF',
     fontWeight: '800',
   },
-  sidebarFooter: {
-    paddingTop: 16,
+  sidebarActionsContainer: {
+    paddingTop: 10,
+    paddingBottom: 4,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.06)',
+    borderTopColor: colors.brand.border,
+    gap: 4,
+  },
+  sidebarActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  sidebarActionIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 7,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sidebarActionText: {
+    fontSize: 12,
+    color: '#CBD5E1',
+    marginLeft: 8,
+    fontWeight: '700',
+  },
+  sidebarActionBtnLogout: {
+    backgroundColor: 'rgba(239, 68, 68, 0.08)',
+  },
+  sidebarLogoutIconWrap: {
+    backgroundColor: 'rgba(239, 68, 68, 0.18)',
+  },
+  sidebarLogoutText: {
+    fontSize: 12,
+    color: '#FCA5A5',
+    marginLeft: 8,
+    fontWeight: '700',
+  },
+  sidebarFooter: {
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: colors.brand.border,
   },
   footerNote: {
-    fontSize: 10,
-    color: '#475569',
+    fontSize: 9,
+    color: '#64748B',
     textAlign: 'center',
-    fontWeight: '600',
-    letterSpacing: 0.5,
+    fontWeight: '700',
+    letterSpacing: 1,
   },
 });

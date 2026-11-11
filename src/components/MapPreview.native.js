@@ -1,37 +1,43 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { StyleSheet, View, Platform, Text } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE, PROVIDER_DEFAULT } from 'react-native-maps';
+import colors from '../theme/colors';
 
-export default function MapPreview({ latitude, longitude, title }) {
-  const nightMapStyle = [
-    { elementType: 'geometry', stylers: [{ color: '#242f3e' }] },
-    { elementType: 'labels.text.fill', stylers: [{ color: '#746855' }] },
-    { elementType: 'labels.text.stroke', stylers: [{ color: '#242f3e' }] },
-    {
-      featureType: 'administrative.locality',
-      elementType: 'labels.text.fill',
-      stylers: [{ color: '#d59563' }],
-    },
-    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#38414e' }] },
-    { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#212a37' }] },
-    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#17263c' }] },
-  ];
+export default function MapPreview({ latitude, longitude, title = 'Ubicación' }) {
+  const isValidCoord =
+    typeof latitude === 'number' &&
+    typeof longitude === 'number' &&
+    !isNaN(latitude) &&
+    !isNaN(longitude);
+
+  if (!isValidCoord) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Ubicación no disponible</Text>
+      </View>
+    );
+  }
+
+  const provider = Platform.OS === 'android' ? PROVIDER_GOOGLE : PROVIDER_DEFAULT;
 
   return (
     <View style={styles.mapContainer}>
       <MapView
-        provider={PROVIDER_GOOGLE}
+        provider={provider}
         style={StyleSheet.absoluteFillObject}
-        customMapStyle={nightMapStyle}
-        initialRegion={{
+        region={{
           latitude,
           longitude,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
-        toolbarEnabled={false}
+        toolbarEnabled={true}
       >
-        <Marker coordinate={{ latitude, longitude }} title={title} pinColor="#FF5E00" />
+        <Marker
+          coordinate={{ latitude, longitude }}
+          title={title}
+          pinColor={colors.emergency.primary}
+        />
       </MapView>
     </View>
   );
@@ -39,17 +45,25 @@ export default function MapPreview({ latitude, longitude, title }) {
 
 const styles = StyleSheet.create({
   mapContainer: {
-    height: 220,
+    height: '100%',
     width: '100%',
-    borderRadius: 20,
+    borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#050A18',
+    backgroundColor: '#E2E8F0',
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 94, 0, 0.3)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
+    borderColor: '#CBD5E1',
+    elevation: 4,
+  },
+  errorContainer: {
+    height: '100%',
+    width: '100%',
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorText: {
+    color: '#64748B',
+    fontSize: 13,
   },
 });
