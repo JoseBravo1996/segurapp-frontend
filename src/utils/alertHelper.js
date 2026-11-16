@@ -3,6 +3,7 @@ import NetInfo from '@react-native-community/netinfo';
 import * as segurappApi from '../services/segurappApi';
 import { enqueueAlert, generateUUID } from '../services/offlineQueue';
 import { openWhatsAppUrl } from './openWhatsApp';
+import { requestContactNotification } from '../services/contactNotifyEvents';
 
 /**
  * Dispara una alerta de pánico con la ubicación actual del usuario.
@@ -58,11 +59,7 @@ export async function triggerAlertWithLocation(word, isSilent = false, { notifyC
 
     // En modo silencioso (isSilent = true), NO abrir aplicaciones externas en el emisor
     if (!isSilent && notifyContacts && result?.contacts?.length > 0) {
-      const firstContact = result.contacts[0];
-      await openWhatsAppUrl(
-        firstContact.whatsappUrl,
-        `Avisá manualmente a ${firstContact.name} (${firstContact.phone}).`
-      );
+      requestContactNotification({ type: 'alert', contacts: result.contacts });
     }
 
     return result;
@@ -90,8 +87,10 @@ export async function markSafeAndNotify({ alertId } = {}) {
     ? await segurappApi.resolveAlert(alertId)
     : await segurappApi.resolveLatestAlert();
 
-  // Si devuelve un enlace general o el primer contacto, abrir WhatsApp
-  if (result?.whatsappUrl) {
+  // Avisar a todos los contactos; si el backend no devuelve la lista, usar el contacto de la palabra clave
+  if (result?.contacts?.length > 0) {
+    requestContactNotification({ type: 'safe', contacts: result.contacts });
+  } else if (result?.whatsappUrl) {
     const contactName = result.contact?.name || 'tus contactos';
     await openWhatsAppUrl(
       result.whatsappUrl,

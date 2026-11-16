@@ -81,6 +81,10 @@ export function resolveLatestAlert() {
   return apiRequest('/api/alerts/resolve-latest', { method: 'POST' });
 }
 
+export function getRealtimeToken() {
+  return apiRequest('/api/realtime/token');
+}
+
 export function registerDeviceToken({ token, platform }) {
   return apiRequest('/api/device-token', {
     method: 'POST',

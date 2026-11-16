@@ -6,7 +6,7 @@
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as segurappApi from './segurappApi';
-import { openWhatsAppUrl } from '../utils/openWhatsApp';
+import { requestContactNotification } from './contactNotifyEvents';
 
 const QUEUE_STORAGE_KEY = '@segurapp_offline_alert_queue_v2';
 const MAX_RETRIES = 5;
@@ -122,13 +122,9 @@ export async function flushAlertQueue() {
         sent++;
         console.log(`[OfflineQueue] Alerta confirmada por el servidor: ${item.clientAlertId}`);
 
-        // Si no es silenciosa y tiene contactos, avisar por WhatsApp si aplica
+        // Si no es silenciosa y tiene contactos, avisar a todos por WhatsApp
         if (!item.isSilent && result?.contacts?.length > 0) {
-          const firstContact = result.contacts[0];
-          await openWhatsAppUrl(
-            firstContact.whatsappUrl,
-            `Avisá manualmente a ${firstContact.name} (${firstContact.phone}).`
-          );
+          requestContactNotification({ type: 'alert', contacts: result.contacts });
         }
       } catch (err) {
         const status = err?.status;

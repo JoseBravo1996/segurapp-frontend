@@ -178,7 +178,7 @@ export default function HomeScreen({ navigation }) {
         isSilent ? '🔇 ALERTA SILENCIOSA REGISTRADA' : '🚨 ¡EMERGENCIA ACTIVADA!',
         isSilent
           ? 'Tu ubicación fue transmitida en modo silencioso sin alertas en tu dispositivo.'
-          : `Se notificó tu ubicación GPS a tus ${totalContacts} contactos de emergencia.`
+          : `Tu alerta quedó registrada. Enviá tu ubicación por WhatsApp a tus ${totalContacts} contactos de emergencia.`
       );
       loadDashboardData();
     } catch (error) {

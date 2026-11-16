@@ -15,6 +15,7 @@ import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { WordsProvider } from './src/context/WordsContext';
 import { GuidedOnboardingProvider } from './src/context/GuidedOnboardingContext';
 import GuidedTopBanner from './src/components/GuidedTopBanner';
+import NotifyContactsModal from './src/components/NotifyContactsModal';
 import VoiceListenerProvider from './src/providers/VoiceListenerProvider';
 import PushNotificationProvider from './src/providers/PushNotificationProvider';
 import { navigationRef } from './src/navigation/navigationRef';
@@ -123,6 +124,7 @@ function AppNavigator() {
             <PushNotificationProvider />
             <VoiceListenerProvider />
             <GuidedTopBanner />
+            <NotifyContactsModal />
             <Stack.Navigator
               initialRouteName={isAuthenticated ? 'Emergencia' : 'Login'}
               screenOptions={{
