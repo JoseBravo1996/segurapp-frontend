@@ -34,6 +34,7 @@ export default function LocationStatus() {
 
   useEffect(() => {
     cancelledRef.current = false;
+    let subscription = null;
 
     Animated.loop(
       Animated.sequence([
@@ -47,7 +48,7 @@ export default function LocationStatus() {
       if (cancelledRef.current) return;
       setCoordsText(formatted);
 
-      // Obtener dirección más cercana mediante geocodificación inversa
+      // Obtener las 2 calles más cercanas e intersección mediante geocodificación dinámica
       let resolvedAddress = null;
       try {
         resolvedAddress = await getNearestAddress(latitude, longitude);
@@ -55,7 +56,7 @@ export default function LocationStatus() {
         console.warn('[LocationStatus] Error en getNearestAddress:', e);
       }
 
-      // Fallback con expo-location si no se obtuvo de Nominatim
+      // Fallback con expo-location si no se obtuvo por red
       if (!resolvedAddress) {
         try {
           const expoReverse = await Location.reverseGeocodeAsync({ latitude, longitude });
@@ -111,6 +112,24 @@ export default function LocationStatus() {
         } else {
           setStatusMessage('Ubicación no disponible');
         }
+
+        // Suscripción reactiva para actualizar inmediatamente ante cambios de coordenadas GPS
+        try {
+          subscription = await Location.watchPositionAsync(
+            {
+              accuracy: Location.Accuracy.Balanced,
+              distanceInterval: 10,
+              timeInterval: 4000,
+            },
+            (newLoc) => {
+              if (cancelledRef.current || !newLoc?.coords) return;
+              const { latitude, longitude } = newLoc.coords;
+              resolveLocationDetails(latitude, longitude);
+            }
+          );
+        } catch (watchErr) {
+          // watchPosition puede no estar soportado en algunos navegadores de escritorio
+        }
       } catch {
         if (!cancelledRef.current) {
           setStatusMessage('Error al obtener ubicación');
@@ -120,6 +139,9 @@ export default function LocationStatus() {
 
     return () => {
       cancelledRef.current = true;
+      if (subscription && typeof subscription.remove === 'function') {
+        subscription.remove();
+      }
     };
   }, []);
 

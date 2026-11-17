@@ -152,9 +152,91 @@ export async function getNearestAddress(latitude, longitude) {
     console.warn('[geocodingService] Backend reverse no disponible, probando Photon:', err);
   }
 
-  // 2. Fallback directo a Photon Reverse (OpenStreetMap) con soporte de múltiples calles
+  // 2. Intentar resolución directa de 2 calles vía OSM Map API
   try {
-    const photonRevUrl = `https://photon.komoot.io/reverse?lat=${latitude}&lon=${longitude}&limit=5`;
+    const delta = 0.0015;
+    const osmUrl = `https://api.openstreetmap.org/api/0.6/map.json?bbox=${(longitude - delta).toFixed(5)},${(latitude - delta).toFixed(5)},${(longitude + delta).toFixed(5)},${(latitude + delta).toFixed(5)}`;
+    const osmRes = await fetch(osmUrl, {
+      headers: { 'User-Agent': 'SegurAPP-Client/1.0' },
+    });
+
+    if (osmRes.ok) {
+      const osmData = await osmRes.json();
+      const elements = Array.isArray(osmData?.elements) ? osmData.elements : [];
+
+      const nodes = new Map();
+      elements.forEach((el) => {
+        if (el.type === 'node') nodes.set(el.id, { lat: el.lat, lon: el.lon });
+      });
+
+      const nodeStreets = new Map();
+      const streetDistances = new Map();
+      const excluded = new Set(['footway', 'steps', 'pedestrian_crossing', 'path', 'cycleway', 'bridleway', 'track']);
+
+      elements.forEach((el) => {
+        if (el.type === 'way' && el.tags?.highway && el.tags?.name) {
+          const hw = el.tags.highway;
+          const name = el.tags.name.trim();
+          if (!name || excluded.has(hw) || name.startsWith('Estacionamiento') || name.startsWith('Bicisenda')) {
+            return;
+          }
+
+          if (!streetDistances.has(name)) streetDistances.set(name, Infinity);
+
+          (el.nodes || []).forEach((nId) => {
+            const nCoords = nodes.get(nId);
+            if (nCoords) {
+              const dLat = (latitude - nCoords.lat) * 111320;
+              const dLon = (longitude - nCoords.lon) * 111320 * Math.cos((latitude * Math.PI) / 180);
+              const dist = Math.sqrt(dLat * dLat + dLon * dLon);
+
+              if (dist < streetDistances.get(name)) {
+                streetDistances.set(name, dist);
+              }
+
+              if (!nodeStreets.has(nId)) nodeStreets.set(nId, new Set());
+              nodeStreets.get(nId).add(name);
+            }
+          });
+        }
+      });
+
+      // Intersecciones reales (nodos con >= 2 calles distintas)
+      const intersections = [];
+      nodeStreets.forEach((sts, nId) => {
+        if (sts.size >= 2) {
+          const nCoords = nodes.get(nId);
+          if (nCoords) {
+            const dLat = (latitude - nCoords.lat) * 111320;
+            const dLon = (longitude - nCoords.lon) * 111320 * Math.cos((latitude * Math.PI) / 180);
+            const dist = Math.sqrt(dLat * dLat + dLon * dLon);
+            const arr = Array.from(sts);
+            intersections.push({ dist, stA: arr[0], stB: arr[1] });
+          }
+        }
+      });
+
+      if (intersections.length > 0) {
+        intersections.sort((a, b) => a.dist - b.dist);
+        const resolved = `${intersections[0].stA} y ${intersections[0].stB}`;
+        reverseCache.set(cacheKey, resolved);
+        return resolved;
+      }
+
+      if (streetDistances.size >= 2) {
+        const sorted = Array.from(streetDistances.entries()).sort((a, b) => a[1] - b[1]);
+        const resolved = `${sorted[0][0]} y ${sorted[1][0]}`;
+        reverseCache.set(cacheKey, resolved);
+        return resolved;
+      }
+    }
+  } catch (osmErr) {
+    // Continuar a Photon
+  }
+
+  // 3. Fallback directo a Photon Reverse (OpenStreetMap) con soporte de múltiples calles (limit=20)
+  try {
+    const photonRevUrl = `https://photon.komoot.io/reverse?lat=${latitude}&lon=${longitude}&limit=20`;
     const pRes = await fetch(photonRevUrl);
     if (pRes.ok) {
       const pData = await pRes.json();
@@ -173,14 +255,19 @@ export async function getNearestAddress(latitude, longitude) {
 
         if (street && typeof street === 'string') {
           const cleanSt = street.trim();
-          const exists = streetNames.some(
-            (s) =>
-              s.toLowerCase() === cleanSt.toLowerCase() ||
-              s.toLowerCase().includes(cleanSt.toLowerCase()) ||
-              cleanSt.toLowerCase().includes(s.toLowerCase())
-          );
-          if (!exists) {
-            streetNames.push(cleanSt);
+          if (
+            !cleanSt.startsWith('Estacionamiento') &&
+            !cleanSt.startsWith('Bicisenda')
+          ) {
+            const exists = streetNames.some(
+              (s) =>
+                s.toLowerCase() === cleanSt.toLowerCase() ||
+                s.toLowerCase().includes(cleanSt.toLowerCase()) ||
+                cleanSt.toLowerCase().includes(s.toLowerCase())
+            );
+            if (!exists) {
+              streetNames.push(cleanSt);
+            }
           }
         }
 
@@ -210,10 +297,7 @@ export async function getNearestAddress(latitude, longitude) {
     console.warn('[geocodingService] Fallback Photon reverse falló:', pErr);
   }
 
-  // 3. Fallback inteligente local por cuadrante geográfico
-  const localFallback = getLocalReverseFallback(latitude, longitude);
-  reverseCache.set(cacheKey, localFallback);
-  return localFallback;
+  return 'Ubicación geolocalizada en mapa';
 }
 
 function getLocalFallbackMatches(query) {
@@ -247,17 +331,4 @@ function getLocalFallbackMatches(query) {
       latitude: item.lat,
       longitude: item.lon,
     }));
-}
-
-function getLocalReverseFallback(lat, lon) {
-  if (lat < -34.78 && lat > -34.81 && lon < -58.19 && lon > -58.23) {
-    return 'Avenida Antártida Argentina y Calle 354, Ranelagh';
-  }
-  if (lat < -34.77 && lat > -34.83 && lon < -58.25 && lon > -58.30) {
-    return 'Avenida San Martín y José Dans Rey, Florencio Varela';
-  }
-  if (lat < -34.70 && lat > -34.75 && lon < -58.23 && lon > -58.28) {
-    return 'Avenida Mitre y Av. 12 de Octubre, Quilmes';
-  }
-  return 'Ubicación geolocalizada en mapa';
 }
